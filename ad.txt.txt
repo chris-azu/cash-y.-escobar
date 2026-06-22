@@ -1,68 +1,51 @@
-URGENTE: El panel administrativo parece funcionar visualmente pero no está realizando operaciones reales.
+Tenemos un problema crítico.
 
-Problemas detectados:
+El panel administrativo abre correctamente pero ninguna operación modifica datos reales.
 
-1. Al crear un producto:
-   - No aparece en la tienda.
-   - No se guarda.
+Comportamiento actual:
 
-2. Al editar un producto:
-   - No se reflejan cambios.
+- Crear producto = no sucede nada.
+- Editar producto = no sucede nada.
+- Eliminar producto = no sucede nada.
+- Crear banner = no sucede nada.
+- Modificar textos = no sucede nada.
 
-3. Al eliminar un producto:
-   - No ocurre nada.
-
-4. Al crear banners:
-   - No se guardan.
-
-5. Al modificar contenido:
-   - No se actualiza la web.
-
-Necesito una revisión completa del flujo CRUD.
+Necesito una auditoría técnica completa.
 
 Verificar:
 
-- CREATE (crear)
-- READ (leer)
-- UPDATE (actualizar)
-- DELETE (eliminar)
+1. ¿Existe almacenamiento real de datos?
+2. ¿Dónde se guardan los datos?
+3. ¿Se está utilizando:
+   - LocalStorage?
+   - JSON?
+   - Supabase?
+   - Firebase?
+   - Otra base de datos?
 
-para:
+4. Confirmar si actualmente el panel es solo visual.
 
-- Productos
-- Categorías
-- Banners
-- Configuración
-- Textos
+5. Revisar cada botón:
+   - Crear
+   - Editar
+   - Guardar
+   - Eliminar
+   - Restaurar
 
-Además necesito que indiques exactamente:
+y confirmar que ejecuten operaciones reales.
 
-1. Dónde se almacenan los datos.
-   - LocalStorage
-   - JSON
-   - Supabase
-   - Firebase
-   - Otro
+Necesito CRUD completamente funcional.
 
-2. Qué función se ejecuta al guardar.
+Además:
 
-3. Qué función actualiza la interfaz.
+Agregar logs visibles o mensajes de éxito/error para saber qué ocurre cuando se intenta guardar información.
 
-4. Por qué actualmente las acciones no producen cambios visibles.
+Por favor indicar exactamente:
 
-5. Si el panel es únicamente una maqueta visual o si existe persistencia real de datos.
+- Qué datos se están guardando.
+- Dónde se están guardando.
+- Cómo verificar que realmente fueron almacenados.
 
-IMPORTANTE:
+No quiero una interfaz simulada.
 
-No quiero botones simulados.
-
-Cada acción del panel debe modificar datos reales y reflejarse inmediatamente en la tienda.
-
-Necesito un sistema completamente funcional donde:
-
-- Crear producto = aparece en la tienda.
-- Editar producto = actualiza la tienda.
-- Eliminar producto = desaparece o pasa a papelera.
-- Crear banner = aparece en la página principal.
-
-Revisar toda la lógica de administración y corregir cualquier funcionalidad incompleta.
+Necesito administración real con persistencia de datos.

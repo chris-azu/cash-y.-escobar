@@ -109,7 +109,7 @@ const EH_DATA = (function () {
       try {
         const data = await EH.list('categories');
         if (data && data.length > 0) return data.map(c => c.name);
-      } catch {}
+      } catch (e) { console.error('[storage]', e); }
     }
     let cats = lsGet('categories');
     if (!cats || cats.length === 0) {
@@ -124,7 +124,7 @@ const EH_DATA = (function () {
       try {
         const data = await EH.list('categories');
         if (data) return data;
-      } catch {}
+      } catch (e) { console.error('[storage]', e); }
     }
     const names = await getCategories();
     return names.map((n, i) => ({ id: i + 1, name: n, is_active: true, deleted_at: null }));
@@ -143,7 +143,7 @@ const EH_DATA = (function () {
         for (const c of toAdd) {
           await EH.insert('categories', { name: c });
         }
-      } catch {}
+      } catch (e) { console.error('[storage]', e); }
     }
     lsSet('categories', cats);
   }
@@ -194,7 +194,7 @@ const EH_DATA = (function () {
             deleted_at: p.deleted_at
           }));
         }
-      } catch {}
+      } catch (e) { console.error('[storage]', e); }
     }
     let p = lsGet('products');
     if (!p) {
@@ -218,7 +218,7 @@ const EH_DATA = (function () {
             deleted_at: p.deleted_at
           }));
         }
-      } catch {}
+      } catch (e) { console.error('[storage]', e); }
     }
     return lsGet('products') || [];
   }
@@ -246,7 +246,7 @@ const EH_DATA = (function () {
             }
           }
         }
-      } catch {}
+      } catch (e) { console.error('[storage]', e); }
     }
     lsSet('products', products);
   }
@@ -272,7 +272,7 @@ const EH_DATA = (function () {
           is_active: true
         });
         if (data) entry.id = data.id;
-      } catch {}
+      } catch (e) { console.error('[storage]', e); }
     }
     list.push(entry);
     lsSet('products', list);
@@ -288,7 +288,7 @@ const EH_DATA = (function () {
         if (updates.image !== undefined) record.image_url = updates.image;
         if (updates.is_active !== undefined) record.is_active = updates.is_active;
         await EH.update('products', id, record);
-      } catch {}
+      } catch (e) { console.error('[storage]', e); }
     }
     const list = await getProductsAll();
     const idx = list.findIndex(p => {
@@ -305,7 +305,7 @@ const EH_DATA = (function () {
     if (useSupabase() && typeof id === 'string' && id.includes('-')) {
       try {
         await EH.softDelete('products', id);
-      } catch {}
+      } catch (e) { console.error('[storage]', e); }
     }
     const list = await getProductsAll();
     const idx = list.findIndex(p => {
@@ -342,7 +342,7 @@ const EH_DATA = (function () {
           data: t.data,
           deleted_at: t.deleted_at
         }));
-      } catch {}
+      } catch (e) { console.error('[storage]', e); }
     }
     return lsGet('trash') || [];
   }
@@ -352,7 +352,7 @@ const EH_DATA = (function () {
       try {
         await EH.restore(trashId);
         return true;
-      } catch {}
+      } catch (e) { console.error('[storage]', e); }
     }
     let trashList = await getTrash();
     const entry = trashList.find(t => t.id === trashId);
@@ -377,7 +377,7 @@ const EH_DATA = (function () {
       try {
         await EH.permanentDelete(trashId);
         return true;
-      } catch {}
+      } catch (e) { console.error('[storage]', e); }
     }
     let trashList = await getTrash();
     const entry = trashList.find(t => t.id === trashId);
@@ -402,7 +402,7 @@ const EH_DATA = (function () {
         if (data) {
           return mapConfigFromDB(data);
         }
-      } catch {}
+      } catch (e) { console.error('[storage]', e); }
     }
     let c = lsGet('config');
     if (!c) {
@@ -493,7 +493,7 @@ const EH_DATA = (function () {
     if (useSupabase()) {
       try {
         await EH.saveConfig(mapConfigToDB(cfg));
-      } catch {}
+      } catch (e) { console.error('[storage]', e); }
     }
     lsSet('config', cfg);
   }
@@ -505,7 +505,7 @@ const EH_DATA = (function () {
       try {
         const data = await EH.list('gallery');
         if (data) return data.map(g => ({ id: g.id, url: g.image_url, alt: g.alt }));
-      } catch {}
+      } catch (e) { console.error('[storage]', e); }
     }
     return lsGet('gallery') || [];
   }
@@ -523,7 +523,7 @@ const EH_DATA = (function () {
             await EH.insert('gallery', { image_url: g.url, alt: g.alt });
           }
         }
-      } catch {}
+      } catch (e) { console.error('[storage]', e); }
     }
     lsSet('gallery', gallery);
   }

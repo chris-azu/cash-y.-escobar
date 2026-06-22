@@ -609,6 +609,83 @@
       color: var(--text-secondary);
       border-bottom: 1px solid rgba(255,255,255,0.03);
     }
+
+    /* ── Activity Log ── */
+    .activity-log {
+      position: fixed;
+      bottom: calc(var(--bottom-nav-height) + 80px);
+      right: 20px;
+      z-index: 9998;
+      width: 320px;
+      max-height: 300px;
+      background: rgba(10,10,15,0.95);
+      backdrop-filter: blur(24px);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-lg);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    .activity-log-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 12px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: var(--text-secondary);
+      border-bottom: 1px solid var(--glass-border);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    #activityLogEntries {
+      flex: 1;
+      overflow-y: auto;
+      padding: 4px 0;
+      font-size: 0.7rem;
+      font-family: monospace;
+    }
+    #activityLogEntries .log-entry {
+      padding: 4px 12px;
+      border-bottom: 1px solid rgba(255,255,255,0.03);
+      color: var(--text-secondary);
+      line-height: 1.4;
+    }
+    #activityLogEntries .log-entry .log-time {
+      color: var(--text-muted);
+      margin-right: 6px;
+    }
+    #activityLogEntries .log-entry.log-error {
+      color: #ef5350;
+    }
+    #activityLogEntries .log-entry.log-success {
+      color: var(--green-light);
+    }
+    .activity-log-toggle {
+      position: fixed;
+      bottom: calc(var(--bottom-nav-height) + 20px);
+      right: 80px;
+      z-index: 9997;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      cursor: pointer;
+      font-size: 1.1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: var(--transition);
+    }
+    .activity-log-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+    @media (min-width: 769px) {
+      .activity-log { max-width: 400px; }
+      .activity-log-toggle { display: none; }
+    }
   </style>
 </head>
 <body>
@@ -958,6 +1035,16 @@
       <i data-lucide="images" style="width:18px;height:18px"></i> Nueva Imagen
     </button>
   </div>
+
+  <!-- Activity Log -->
+  <div id="activityLog" class="activity-log" style="display:none">
+    <div class="activity-log-header">
+      <span>Registro de Actividad</span>
+      <button id="activityLogClear" style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:0.7rem">Limpiar</button>
+    </div>
+    <div id="activityLogEntries"></div>
+  </div>
+  <button id="activityLogToggle" class="activity-log-toggle" aria-label="Ver registro">📋</button>
 
   <!-- Modal -->
   <div class="modal-overlay" id="modalOverlay">

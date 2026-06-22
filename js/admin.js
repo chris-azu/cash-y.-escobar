@@ -6,6 +6,13 @@
     return;
   }
 
+  window.addEventListener('error', (e) => {
+    showToast('Error: ' + (e.error?.message || e.message || 'Error desconocido'), 'error');
+  });
+  window.addEventListener('unhandledrejection', (e) => {
+    showToast('Error inesperado: ' + (e.reason?.message || 'Promesa rechazada'), 'error');
+  });
+
   let cfg = {};
   let currentTab = 'dashboard';
   let lucideReady = false;
@@ -25,10 +32,12 @@
       toast.className = 'toast';
       document.body.appendChild(toast);
     }
+    addLog(msg, type);
+    console.log(`[admin] ${type}: ${msg}`);
     toast.textContent = msg;
     toast.className = `toast ${type}`;
     setTimeout(() => toast.classList.add('show'), 10);
-    setTimeout(() => toast.classList.remove('show'), 3500);
+    setTimeout(() => toast.classList.remove('show'), 4000);
   }
 
   // ── Modal ──
@@ -41,8 +50,25 @@
     bodyEl.innerHTML = bodyHTML;
     overlay.classList.add('open');
     const cancelBtn = document.getElementById('modalCancel');
+    const confirmBtn = document.getElementById('modalConfirm');
     const handleCancel = () => { overlay.classList.remove('open'); form.onsubmit = null; };
-    const handleSubmit = (e) => { e.preventDefault(); onSubmit(e); overlay.classList.remove('open'); form.onsubmit = null; };
+    const handleSubmit = async (e) => {
+      e.preventDefault();
+      const origText = confirmBtn.textContent;
+      confirmBtn.disabled = true;
+      confirmBtn.textContent = 'Guardando...';
+      try {
+        await onSubmit(e);
+      } catch (err) {
+        console.error('[admin] Error en modal:', err);
+        showToast('Error: ' + (err?.message || 'Ocurrió un error inesperado'), 'error');
+      } finally {
+        overlay.classList.remove('open');
+        form.onsubmit = null;
+        confirmBtn.disabled = false;
+        confirmBtn.textContent = origText;
+      }
+    };
     cancelBtn.onclick = handleCancel;
     form.onsubmit = handleSubmit;
     overlay.onclick = (e) => { if (e.target === overlay) { overlay.classList.remove('open'); form.onsubmit = null; } };
@@ -55,9 +81,10 @@
   }
 
   function readFileAsDataURL(file) {
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.onload = () => resolve(reader.result);
+      reader.onerror = () => reject(new Error('Error al leer el archivo'));
       reader.readAsDataURL(file);
     });
   }
@@ -184,7 +211,7 @@
   async function editProduct(id) {
     const products = await EH_DATA.getProductsAll();
     const p = products.find(x => String(x.id) === String(id));
-    if (!p) return;
+    if (!p) { showToast('Producto no encontrado.', 'error'); return; }
     const cats = await EH_DATA.getCategories();
     showModal('Editar Producto', `
       <div class="form-group"><label>Nombre *</label><input type="text" class="form-control" id="prodName" value="${(p.name || '').replace(/"/g, '&quot;')}" required></div>
@@ -197,6 +224,7 @@
       const image = document.getElementById('prodImageUrl').value.trim();
       const is_active = document.getElementById('prodActive').value === '1';
       if (!name) { showToast('El nombre es obligatorio.', 'error'); closeModal(); return; }
+      addLog(`Editando producto: "${name}"`, 'info');
       await EH_DATA.updateProduct(id, { name, category, image, is_active });
       showToast('Producto actualizado.');
       loadProducts();
@@ -207,7 +235,8 @@
   async function toggleProduct(id) {
     const products = await EH_DATA.getProductsAll();
     const p = products.find(x => String(x.id) === String(id));
-    if (!p) return;
+    if (!p) { showToast('Producto no encontrado.', 'error'); return; }
+    addLog(`Cambiando estado producto "${p.name}": ${p.is_active ? 'desactivar' : 'activar'}`, 'info');
     await EH_DATA.updateProduct(id, { is_active: !p.is_active });
     showToast(p.is_active ? 'Producto desactivado.' : 'Producto activado.');
     loadProducts();
@@ -215,6 +244,7 @@
 
   async function deleteProduct(id) {
     if (!confirm('¿Enviar este producto a la papelera?')) return;
+    addLog(`Eliminando producto ID: ${id}`, 'info');
     await EH_DATA.deleteProduct(id);
     showToast('Producto movido a la papelera.');
     loadProducts();
@@ -239,6 +269,7 @@
       const category = document.getElementById('prodCategory').value;
       const image = document.getElementById('prodImageUrl').value.trim();
       if (!name) { showToast('El nombre es obligatorio.', 'error'); closeModal(); return; }
+      addLog(`Creando producto: "${name}" (${category})...`, 'info');
       await EH_DATA.addProduct({ name, category, image });
       showToast('Producto creado.');
       loadProducts();
@@ -302,6 +333,7 @@
     `, async () => {
       const newName = document.getElementById('catName').value.trim();
       if (!newName) { showToast('El nombre es obligatorio.', 'error'); closeModal(); return; }
+      addLog(`Editando categoria: "${name}" -> "${newName}"`, 'info');
       await EH_DATA.editCategory(name, newName);
       showToast('Categoria actualizada.');
       loadCategories();
@@ -310,6 +342,7 @@
 
   async function deleteCategoryPrompt(name) {
     if (!confirm(`¿Eliminar la categoria "${name}"?`)) return;
+    addLog(`Eliminando categoria: "${name}"`, 'info');
     await EH_DATA.deleteCategory(name);
     showToast('Categoria eliminada.');
     loadCategories();
@@ -321,6 +354,7 @@
     `, async () => {
       const name = document.getElementById('catName').value.trim();
       if (!name) { showToast('El nombre es obligatorio.', 'error'); closeModal(); return; }
+      addLog(`Creando categoria: "${name}"`, 'info');
       const ok = await EH_DATA.addCategory(name);
       if (!ok) { showToast('Ya existe una categoria con ese nombre.', 'error'); closeModal(); return; }
       showToast('Categoria creada.');
@@ -376,6 +410,7 @@
       const alt = document.getElementById('banAlt').value.trim();
       if (!cfg.banners) cfg.banners = [];
       cfg.banners[idx] = { ...(cfg.banners[idx] || { id: idx + 1 }), url, alt };
+      addLog('Guardando banner...', 'info');
       await EH_DATA.saveConfig(cfg);
       showToast('Banner actualizado.');
       loadBanners();
@@ -389,6 +424,7 @@
       cfg.banners[idx].url = '';
       cfg.banners[idx].alt = '';
     }
+    addLog('Eliminando banner...', 'info');
     await EH_DATA.saveConfig(cfg);
     showToast('Banner eliminado.');
     loadBanners();
@@ -404,6 +440,7 @@
       const alt = document.getElementById('banAlt').value.trim();
       if (!cfg.banners) cfg.banners = [];
       cfg.banners.push({ id: cfg.banners.length + 1, url, alt });
+      addLog('Creando nuevo banner...', 'info');
       await EH_DATA.saveConfig(cfg);
       showToast('Banner creado.');
       loadBanners();
@@ -445,6 +482,7 @@
 
   async function deleteGalleryItem(idx) {
     if (!confirm('¿Eliminar esta imagen de la galeria?')) return;
+    addLog('Eliminando imagen de galeria...', 'info');
     const images = await EH_DATA.getGallery();
     images.splice(idx, 1);
     await EH_DATA.saveGallery(images);
@@ -460,6 +498,7 @@
       const url = document.getElementById('galleryUrl').value.trim();
       const alt = document.getElementById('galleryAlt').value.trim();
       if (!url) { showToast('La URL es obligatoria.', 'error'); closeModal(); return; }
+      addLog('Agregando imagen a galeria...', 'info');
       const images = await EH_DATA.getGallery();
       images.push({ id: Date.now(), url, alt });
       await EH_DATA.saveGallery(images);
@@ -510,6 +549,7 @@
 
   async function restoreItem(id) {
     if (!confirm('¿Restaurar este elemento?')) return;
+    addLog('Restaurando elemento de la papelera...', 'info');
     await EH_DATA.restoreFromTrash(id);
     showToast('Elemento restaurado.');
     loadTrash();
@@ -518,6 +558,7 @@
 
   async function permDeleteItem(id) {
     if (!confirm('¿Eliminar permanentemente? Esta accion no se puede deshacer.')) return;
+    addLog('Eliminando permanentemente de la papelera...', 'info');
     await EH_DATA.permanentDeleteTrash(id);
     showToast('Elemento eliminado permanentemente.');
     loadTrash();
@@ -577,6 +618,10 @@
   }
 
   document.getElementById('saveConfigBtn').addEventListener('click', async () => {
+    const btn = document.getElementById('saveConfigBtn');
+    const origText = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = 'Guardando...';
     cfg = await EH_DATA.getConfig();
     const updated = {
       ...cfg,
@@ -629,8 +674,11 @@
         return { icon: parts[0]?.trim() || 'circle', value: parts[1]?.trim() || '', label: parts[2]?.trim() || '' };
       })
     };
+    addLog('Guardando configuracion general...', 'info');
     await EH_DATA.saveConfig(updated);
     showToast('Configuracion guardada.');
+    btn.disabled = false;
+    btn.textContent = origText;
   });
 
   // ── FAB ──
@@ -687,6 +735,34 @@
     });
   });
 
+  // ── Activity Log ──
+  function addLog(msg, type = 'info') {
+    const entries = document.getElementById('activityLogEntries');
+    if (!entries) return;
+    const time = new Date().toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    const entry = document.createElement('div');
+    entry.className = 'log-entry' + (type === 'error' ? ' log-error' : type === 'success' ? ' log-success' : '');
+    entry.innerHTML = `<span class="log-time">[${time}]</span>${msg}`;
+    entries.appendChild(entry);
+    entries.scrollTop = entries.scrollHeight;
+  }
+
+  const logToggle = document.getElementById('activityLogToggle');
+  const logPanel = document.getElementById('activityLog');
+  if (logToggle && logPanel) {
+    logToggle.addEventListener('click', () => {
+      const isVisible = logPanel.style.display !== 'none';
+      logPanel.style.display = isVisible ? 'none' : 'flex';
+    });
+  }
+
+  const logClear = document.getElementById('activityLogClear');
+  if (logClear) {
+    logClear.addEventListener('click', () => {
+      document.getElementById('activityLogEntries').innerHTML = '';
+    });
+  }
+
   // ── Logout ──
   document.getElementById('logoutBtn').addEventListener('click', (e) => {
     e.preventDefault();
@@ -695,6 +771,7 @@
   });
 
   // ── Init ──
+  addLog('Panel iniciado', 'success');
   loadDashboard();
   loadConfigForm();
   updateTrashNotif();
