@@ -1,0 +1,69 @@
+Excelente avance. Necesito realizar algunos ajustes finales y corregir varios detalles:
+
+1. REEMPLAZAR EMOJIS
+- Sustituir todos los emojis de la interfaz por iconos SVG profesionales.
+- Utilizar una librería consistente (Lucide, Heroicons o similar).
+- Mantener el mismo significado visual pero con apariencia más profesional.
+
+2. TARJETAS DE PRODUCTOS
+Actualmente las imágenes se ven recortadas.
+
+Necesito que:
+- La imagen completa sea visible dentro de la tarjeta.
+- Se utilice object-fit: contain cuando sea necesario.
+- Al pasar el cursor (hover) sobre la imagen:
+  - Se amplíe suavemente.
+  - Se abra una vista expandida tipo zoom/lightbox.
+  - NO modificar el diseño general de la tarjeta.
+  - NO afectar el resto de la interfaz.
+
+3. CORREGIR WHATSAPP
+Actualmente el botón genera error 404.
+
+Verificar y corregir:
+- Formato correcto de enlace:
+  https://wa.me/NUMERO?text=MENSAJE
+- Codificación correcta del mensaje.
+- Que funcione tanto en móvil como en escritorio.
+- Que el número de WhatsApp sea configurable desde el panel de administración.
+
+4. PANEL DE ADMINISTRACIÓN COMPLETO
+Necesito control total desde el panel.
+
+Agregar administración para:
+- Todos los textos del sitio.
+- Nombre de la empresa.
+- Eslogan.
+- Categorías.
+- Productos.
+- Banners.
+- Información de contacto.
+- Número de WhatsApp.
+- Redes sociales.
+- Pie de página.
+- Créditos.
+- Metadatos SEO.
+
+No quiero textos quemados dentro del código.
+
+5. CRÉDITOS Y BRANDING
+Detecté elementos visuales heredados.
+
+Necesito:
+- Revisar toda la aplicación.
+- Eliminar logos vacíos o placeholders.
+- Eliminar referencias del proyecto anterior.
+- Corregir cualquier imagen, ícono o logo sin configurar.
+- Que todo sea configurable desde el panel.
+
+6. AUDITORÍA GENERAL
+Realizar una revisión completa del proyecto para identificar:
+- Textos hardcodeados.
+- Logos sin configurar.
+- Enlaces rotos.
+- Botones sin funcionalidad.
+- Errores visuales.
+- Problemas responsive.
+- Recursos heredados de la plantilla anterior.
+
+El objetivo es que la aplicación quede completamente administrable desde el panel, sin necesidad de modificar código para cambiar contenido.

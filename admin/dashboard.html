@@ -1,0 +1,940 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Panel Admin — ElectroHogar</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%230066cc'/%3E%3Cpath d='M35 50 L50 35 L65 50 L50 65 Z' fill='white'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="../css/style.css">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    :root {
+      --bottom-nav-height: 68px;
+      --admin-header-height: 64px;
+    }
+    * { box-sizing: border-box; }
+
+    .admin-body {
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      padding-bottom: var(--bottom-nav-height);
+    }
+    .admin-header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(10,10,15,0.92);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--glass-border);
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      min-height: var(--admin-header-height);
+    }
+    .admin-header h1 {
+      font-size: 1.15rem;
+      font-weight: 800;
+    }
+    .admin-header .store-link {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      text-decoration: none;
+      padding: 8px 14px;
+      border-radius: 100px;
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      transition: var(--transition);
+    }
+    .admin-header .store-link:hover {
+      background: rgba(255,255,255,0.1);
+      color: var(--text-primary);
+    }
+    .admin-content {
+      flex: 1;
+      padding: 20px;
+      max-width: 1000px;
+      width: 100%;
+      margin: 0 auto;
+    }
+
+    /* ── Bottom Navigation ── */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 200;
+      background: rgba(10,10,15,0.95);
+      backdrop-filter: blur(24px);
+      border-top: 1px solid var(--glass-border);
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      height: var(--bottom-nav-height);
+      padding: 0 4px;
+      padding-bottom: env(safe-area-inset-bottom, 0);
+    }
+    .bottom-nav a {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+      padding: 6px 10px;
+      border-radius: 12px;
+      color: var(--text-muted);
+      font-size: 0.6rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: var(--transition);
+      flex: 1;
+      min-width: 0;
+      position: relative;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .bottom-nav a svg {
+      width: 22px;
+      height: 22px;
+      transition: var(--transition);
+    }
+    .bottom-nav a span {
+      font-size: 0.6rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 100%;
+    }
+    .bottom-nav a:hover {
+      color: var(--text-secondary);
+    }
+    .bottom-nav a.active {
+      color: var(--accent);
+    }
+    .bottom-nav a.active svg {
+      color: var(--accent);
+    }
+    .bottom-nav a .notif-dot {
+      position: absolute;
+      top: 4px;
+      right: 50%;
+      transform: translateX(14px);
+      width: 8px;
+      height: 8px;
+      background: var(--red);
+      border-radius: 50%;
+      display: none;
+    }
+    .bottom-nav a .notif-dot.show { display: block; }
+
+    /* ── Panels ── */
+    .admin-panel { display: none; }
+    .admin-panel.active { display: block; }
+
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .panel-header h2 {
+      font-size: 1.1rem;
+      font-weight: 700;
+    }
+
+    /* ── Stats cards ── */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+    .stat-card {
+      padding: 20px;
+      text-align: center;
+    }
+    .stat-card .stat-value {
+      font-size: 1.6rem;
+      font-weight: 800;
+      color: var(--accent);
+    }
+    .stat-card .stat-label {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      margin-top: 4px;
+    }
+
+    /* ── Product Cards ── */
+    .product-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 12px;
+    }
+    .admin-product-card {
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      transition: var(--transition);
+      position: relative;
+    }
+    .admin-product-card:hover {
+      border-color: var(--glass-shine);
+    }
+    .admin-product-card .apc-image {
+      width: 100%;
+      aspect-ratio: 1;
+      background: linear-gradient(135deg, rgba(0,102,204,0.08), rgba(0,51,102,0.04));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+    .admin-product-card .apc-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      padding: 8px;
+    }
+    .admin-product-card .apc-image .no-img {
+      color: var(--text-muted);
+    }
+    .admin-product-card .apc-body {
+      padding: 12px;
+    }
+    .admin-product-card .apc-name {
+      font-size: 0.8rem;
+      font-weight: 600;
+      margin-bottom: 4px;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .admin-product-card .apc-category {
+      font-size: 0.65rem;
+      color: var(--accent);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+    }
+    .admin-product-card .apc-status {
+      display: inline-block;
+      font-size: 0.6rem;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 100px;
+      margin-bottom: 8px;
+    }
+    .status-active { background: rgba(45,106,79,0.15); color: var(--green-light); }
+    .status-inactive { background: rgba(255,255,255,0.08); color: var(--text-muted); }
+    .admin-product-card .apc-actions {
+      display: flex;
+      gap: 4px;
+    }
+    .admin-product-card .apc-actions button {
+      flex: 1;
+      padding: 6px;
+      border: none;
+      border-radius: 6px;
+      font-size: 0.65rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--transition);
+      font-family: var(--font);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+    }
+
+    /* ── Categories pills ── */
+    .cats-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .cat-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      border-radius: 100px;
+      padding: 6px 14px;
+      font-size: 0.8rem;
+      color: var(--text-primary);
+    }
+    .cat-pill button {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      padding: 2px;
+      display: flex;
+      align-items: center;
+      transition: var(--transition);
+    }
+    .cat-pill button:hover { color: var(--red); }
+
+    /* ── Empty state ── */
+    .empty-state {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--text-muted);
+    }
+    .empty-state svg {
+      margin-bottom: 12px;
+    }
+    .empty-state p {
+      font-size: 0.9rem;
+    }
+
+    /* ── Trash list ── */
+    .trash-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .trash-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-sm);
+      padding: 12px 16px;
+    }
+    .trash-item .ti-info {
+      flex: 1;
+      min-width: 0;
+    }
+    .trash-item .ti-name {
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+    .trash-item .ti-meta {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+    }
+    .trash-item .ti-actions {
+      display: flex;
+      gap: 4px;
+    }
+    .trash-item .ti-actions button {
+      padding: 6px 10px;
+      border: none;
+      border-radius: 6px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--transition);
+      font-family: var(--font);
+    }
+
+    /* ── Control Visual (Banners) ── */
+    .banner-control-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    .banner-control-item {
+      text-align: center;
+    }
+    .banner-control-item .preview-box {
+      width: 100%;
+      aspect-ratio: 16/9;
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+      border: 1px solid var(--glass-border);
+      background: var(--glass-bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 8px;
+    }
+    .banner-control-item .preview-box img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .banner-control-item .bc-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      margin-bottom: 6px;
+    }
+    .banner-control-item .bc-actions {
+      display: flex;
+      gap: 6px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .banner-control-item .bc-actions button {
+      padding: 5px 10px;
+      border: none;
+      border-radius: 6px;
+      font-size: 0.65rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--transition);
+      font-family: var(--font);
+    }
+
+    /* ── Config form ── */
+    .config-section-title {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      border-bottom: 1px solid var(--glass-border);
+      padding-bottom: 8px;
+      margin-top: 24px;
+      margin-bottom: 16px;
+    }
+    .config-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    /* ── FAB ── */
+    .fab {
+      position: fixed;
+      bottom: calc(var(--bottom-nav-height) + 20px);
+      right: 20px;
+      z-index: 150;
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 20px var(--accent-glow);
+      transition: var(--transition);
+    }
+    .fab:hover {
+      transform: scale(1.1);
+      box-shadow: 0 6px 28px var(--accent-glow);
+    }
+    .fab-menu {
+      position: fixed;
+      bottom: calc(var(--bottom-nav-height) + 80px);
+      right: 20px;
+      z-index: 149;
+      display: none;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .fab-menu.open { display: flex; }
+    .fab-option {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 20px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--glass-border);
+      border-radius: 100px;
+      color: var(--text-primary);
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--transition);
+      font-family: var(--font);
+      backdrop-filter: blur(20px);
+      box-shadow: var(--shadow-md);
+    }
+    .fab-option:hover {
+      background: var(--glass-bg);
+    }
+
+    /* ── Modal ── */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(8px);
+      z-index: 9999;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal {
+      background: var(--bg-secondary);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-lg);
+      padding: 28px;
+      width: 100%;
+      max-width: 500px;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: var(--shadow-lg);
+    }
+    .modal h2 {
+      font-size: 1.15rem;
+      font-weight: 700;
+      margin-bottom: 20px;
+    }
+    .modal .form-actions {
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+      margin-top: 20px;
+    }
+    .file-input-wrapper {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    .file-input-wrapper input[type="file"] { display: none; }
+    .img-preview {
+      width: 80px;
+      height: 80px;
+      border-radius: 8px;
+      object-fit: cover;
+      border: 1px solid var(--glass-border);
+      background: var(--glass-bg);
+      margin-top: 8px;
+      display: none;
+    }
+    .img-preview.show { display: block; }
+
+    /* ── Responsive ── */
+    @media (min-width: 769px) {
+      .admin-body {
+        flex-direction: row;
+        padding-bottom: 0;
+      }
+      .admin-header { display: none; }
+      .bottom-nav {
+        position: sticky;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        width: 220px;
+        height: 100vh;
+        flex-direction: column;
+        justify-content: flex-start;
+        gap: 4px;
+        padding: 24px 12px;
+        border-top: none;
+        border-right: 1px solid var(--glass-border);
+        align-items: stretch;
+      }
+      .bottom-nav a {
+        flex-direction: row;
+        justify-content: flex-start;
+        gap: 10px;
+        padding: 12px 14px;
+        font-size: 0.8rem;
+        border-radius: var(--radius-sm);
+      }
+      .bottom-nav a span { font-size: 0.8rem; }
+      .bottom-nav a svg { width: 18px; height: 18px; }
+      .bottom-nav a .notif-dot {
+        position: static;
+        transform: none;
+        margin-left: auto;
+      }
+      .nav-brand { display: none; }
+      .bottom-nav .nav-brand {
+        font-size: 1rem;
+        font-weight: 800;
+        color: var(--text-primary);
+        padding: 0 14px 20px;
+        border-bottom: 1px solid var(--glass-border);
+        margin-bottom: 12px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        text-decoration: none;
+      }
+      .bottom-nav .nav-brand:hover { color: var(--text-primary); }
+      .bottom-nav .nav-spacer { flex: 1; }
+      .admin-content {
+        flex: 1;
+        padding: 32px;
+        max-width: none;
+      }
+      .product-grid {
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 16px;
+      }
+      .stats-grid {
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      }
+      .fab { display: none; }
+      .banner-control-grid { grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); }
+    }
+    @media (max-width: 480px) {
+      .admin-content { padding: 12px; }
+      .product-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+      .admin-product-card .apc-body { padding: 8px; }
+      .admin-product-card .apc-name { font-size: 0.7rem; }
+      .config-grid { grid-template-columns: 1fr; }
+      .banner-control-grid { grid-template-columns: 1fr; }
+    }
+
+    /* ── Table for banners desktop fallback ── */
+    .admin-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    .admin-table th {
+      text-align: left;
+      padding: 10px 14px;
+      font-size: 0.65rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--glass-border);
+    }
+    .admin-table td {
+      padding: 10px 14px;
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      border-bottom: 1px solid rgba(255,255,255,0.03);
+    }
+  </style>
+</head>
+<body>
+  <div class="admin-body">
+    <!-- Mobile Header -->
+    <header class="admin-header">
+      <h1 id="pageTitle">Dashboard</h1>
+      <a href="../index.html" class="store-link" target="_blank">
+        <i data-lucide="external-link" style="width:14px;height:14px"></i> Ver Tienda
+      </a>
+    </header>
+
+    <!-- Desktop Sidebar / Mobile Bottom Nav -->
+    <nav class="bottom-nav" id="bottomNav">
+      <a href="../index.html" class="nav-brand" id="desktopBrand">
+        <div class="logo-placeholder" style="width:28px;height:28px;font-size:0.75rem">EH</div>
+        <span>Panel Admin</span>
+      </a>
+      <a href="#" class="active" data-tab="dashboard">
+        <i data-lucide="bar-chart-3"></i>
+        <span>Dashboard</span>
+      </a>
+      <a href="#" data-tab="products">
+        <i data-lucide="package"></i>
+        <span>Productos</span>
+      </a>
+      <a href="#" data-tab="categories">
+        <i data-lucide="folder"></i>
+        <span>Categorias</span>
+      </a>
+      <a href="#" data-tab="banners">
+        <i data-lucide="image"></i>
+        <span>Banners</span>
+      </a>
+      <a href="#" data-tab="config">
+        <i data-lucide="settings"></i>
+        <span>Config</span>
+      </a>
+      <a href="#" data-tab="trash">
+        <i data-lucide="trash-2"></i>
+        <span>Papelera</span>
+        <span class="notif-dot" id="trashNotif"></span>
+      </a>
+      <div class="nav-spacer"></div>
+      <a href="#" id="logoutBtn" class="logout-link">
+        <i data-lucide="log-out"></i>
+        <span>Cerrar Sesion</span>
+      </a>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="admin-content">
+      <!-- ======================== DASHBOARD ======================== -->
+      <div class="admin-panel active" id="panel-dashboard">
+        <div class="panel-header">
+          <h2>Resumen</h2>
+          <span style="font-size:0.75rem;color:var(--text-muted)" id="currentDate"></span>
+        </div>
+        <div class="stats-grid" id="dashboardStats">
+          <div class="glass-card stat-card">
+            <div class="stat-value" id="statProducts">0</div>
+            <div class="stat-label">Productos</div>
+          </div>
+          <div class="glass-card stat-card">
+            <div class="stat-value" id="statActive">0</div>
+            <div class="stat-label">Activos</div>
+          </div>
+          <div class="glass-card stat-card">
+            <div class="stat-value" id="statInactive">0</div>
+            <div class="stat-label">Inactivos</div>
+          </div>
+          <div class="glass-card stat-card">
+            <div class="stat-value" id="statTrash">0</div>
+            <div class="stat-label">En Papelera</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ======================== PRODUCTS ======================== -->
+      <div class="admin-panel" id="panel-products">
+        <div class="panel-header">
+          <h2>Productos</h2>
+          <button class="btn btn-primary btn-sm" id="addProductBtn">+ Nuevo</button>
+        </div>
+        <div class="product-grid" id="productGrid"></div>
+        <div class="empty-state" id="emptyProducts" style="display:none">
+          <i data-lucide="package" style="width:32px;height:32px"></i>
+          <p>No hay productos. ¡Crea el primero!</p>
+        </div>
+      </div>
+
+      <!-- ======================== CATEGORIES ======================== -->
+      <div class="admin-panel" id="panel-categories">
+        <div class="panel-header">
+          <h2>Categorias</h2>
+          <button class="btn btn-primary btn-sm" id="addCategoryBtn">+ Nueva</button>
+        </div>
+        <div class="glass-card">
+          <div class="cats-list" id="categoriesList"></div>
+          <div class="empty-state" id="emptyCategories" style="display:none">
+            <i data-lucide="folder" style="width:32px;height:32px"></i>
+            <p>No hay categorias. Crea una para empezar.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ======================== BANNERS ======================== -->
+      <div class="admin-panel" id="panel-banners">
+        <div class="panel-header">
+          <h2>Banners</h2>
+          <button class="btn btn-primary btn-sm" id="addBannerBtn">+ Nuevo</button>
+        </div>
+        <div class="banner-control-grid" id="bannerGrid"></div>
+        <div class="empty-state" id="emptyBanners" style="display:none">
+          <i data-lucide="image" style="width:32px;height:32px"></i>
+          <p>No hay banners. Agrega uno para promocionar tus productos.</p>
+        </div>
+      </div>
+
+      <!-- ======================== CONFIG ======================== -->
+      <div class="admin-panel" id="panel-config">
+        <div class="panel-header">
+          <h2>Configuracion</h2>
+          <button class="btn btn-primary btn-sm" id="saveConfigBtn">Guardar</button>
+        </div>
+        <div class="glass-card">
+          <form id="configForm">
+            <div class="config-section-title">Informacion del Negocio</div>
+            <div class="config-grid">
+              <div class="form-group">
+                <label>Nombre del negocio</label>
+                <input type="text" class="form-control" id="cfgName">
+              </div>
+              <div class="form-group">
+                <label>Eslogan</label>
+                <input type="text" class="form-control" id="cfgSlogan">
+              </div>
+              <div class="form-group">
+                <label>Logo (URL)</label>
+                <input type="url" class="form-control" id="cfgLogo" placeholder="https://...">
+              </div>
+              <div class="form-group">
+                <label>WhatsApp (numero)</label>
+                <input type="text" class="form-control" id="cfgWhatsapp" placeholder="50575381352">
+              </div>
+            </div>
+
+            <div class="config-section-title">Hero</div>
+            <div class="config-grid">
+              <div class="form-group">
+                <label>Hero Tag</label>
+                <input type="text" class="form-control" id="cfgHeroTag">
+              </div>
+              <div class="form-group">
+                <label>Hero Titulo (HTML)</label>
+                <input type="text" class="form-control" id="cfgHeroTitle">
+              </div>
+              <div class="form-group" style="grid-column:1/-1">
+                <label>Hero Subtitulo</label>
+                <textarea class="form-control" id="cfgHeroSubtitle" rows="2"></textarea>
+              </div>
+            </div>
+
+            <div class="config-section-title">Contacto</div>
+            <div class="config-grid">
+              <div class="form-group">
+                <label>Direccion</label>
+                <input type="text" class="form-control" id="cfgAddress">
+              </div>
+              <div class="form-group">
+                <label>Telefono</label>
+                <input type="text" class="form-control" id="cfgPhone">
+              </div>
+              <div class="form-group">
+                <label>Email</label>
+                <input type="email" class="form-control" id="cfgEmail">
+              </div>
+              <div class="form-group">
+                <label>Horarios</label>
+                <input type="text" class="form-control" id="cfgHours">
+              </div>
+              <div class="form-group">
+                <label>Facebook (URL)</label>
+                <input type="url" class="form-control" id="cfgFacebook">
+              </div>
+              <div class="form-group">
+                <label>Instagram (URL)</label>
+                <input type="url" class="form-control" id="cfgInstagram">
+              </div>
+              <div class="form-group">
+                <label>Twitter (URL)</label>
+                <input type="url" class="form-control" id="cfgTwitter">
+              </div>
+              <div class="form-group">
+                <label>Imagen Hero (URL)</label>
+                <input type="url" class="form-control" id="cfgHeroImage" placeholder="https://...">
+              </div>
+            </div>
+
+            <div class="config-section-title">Mensaje WhatsApp</div>
+            <div class="form-group">
+              <label>Mensaje automatico (usa {NOMBRE_PRODUCTO} como variable)</label>
+              <textarea class="form-control" id="cfgWhatsappMsg" rows="2" placeholder="Hola, me interesa este producto: {NOMBRE_PRODUCTO}. ¿Me podrian indicar el precio y disponibilidad?"></textarea>
+            </div>
+
+            <div class="config-section-title">Textos de Secciones</div>
+            <div class="config-grid">
+              <div class="form-group">
+                <label>Tag - Destacados</label>
+                <input type="text" class="form-control" id="cfgSecTagDest">
+              </div>
+              <div class="form-group">
+                <label>Titulo - Destacados</label>
+                <input type="text" class="form-control" id="cfgSecTitleDest">
+              </div>
+              <div class="form-group">
+                <label>Tag - Beneficios</label>
+                <input type="text" class="form-control" id="cfgSecTagBen">
+              </div>
+              <div class="form-group">
+                <label>Titulo - Beneficios</label>
+                <input type="text" class="form-control" id="cfgSecTitleBen">
+              </div>
+              <div class="form-group">
+                <label>Tag - Testimonios</label>
+                <input type="text" class="form-control" id="cfgSecTagTest">
+              </div>
+              <div class="form-group">
+                <label>Titulo - Testimonios</label>
+                <input type="text" class="form-control" id="cfgSecTitleTest">
+              </div>
+            </div>
+
+            <div class="config-section-title">CTA</div>
+            <div class="config-grid">
+              <div class="form-group">
+                <label>Titulo CTA</label>
+                <input type="text" class="form-control" id="cfgCtaTitle">
+              </div>
+              <div class="form-group">
+                <label>Texto CTA</label>
+                <textarea class="form-control" id="cfgCtaText" rows="2"></textarea>
+              </div>
+            </div>
+
+            <div class="config-section-title">Footer</div>
+            <div class="config-grid">
+              <div class="form-group">
+                <label>Descripcion</label>
+                <textarea class="form-control" id="cfgFooterDesc" rows="2"></textarea>
+              </div>
+              <div class="form-group">
+                <label>Creditos</label>
+                <input type="text" class="form-control" id="cfgFooterCredits">
+              </div>
+              <div class="form-group">
+                <label>Politica / Terminos</label>
+                <input type="text" class="form-control" id="cfgFooterPolicy">
+              </div>
+            </div>
+
+            <div class="config-section-title">SEO</div>
+            <div class="config-grid">
+              <div class="form-group">
+                <label>Meta Description</label>
+                <textarea class="form-control" id="cfgMetaDesc" rows="2"></textarea>
+              </div>
+              <div class="form-group">
+                <label>Meta Keywords</label>
+                <input type="text" class="form-control" id="cfgMetaKeywords">
+              </div>
+            </div>
+
+            <div class="config-section-title">Texto Sobre Nosotros</div>
+            <div class="form-group">
+              <textarea class="form-control" id="cfgAboutText" rows="4"></textarea>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- ======================== TRASH ======================== -->
+      <div class="admin-panel" id="panel-trash">
+        <div class="panel-header">
+          <h2>Papelera</h2>
+          <span style="font-size:0.75rem;color:var(--text-muted)" id="trashCount"></span>
+        </div>
+        <div class="trash-list" id="trashList"></div>
+        <div class="empty-state" id="emptyTrash" style="display:none">
+          <i data-lucide="trash-2" style="width:32px;height:32px"></i>
+          <p>La papelera esta vacia.</p>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- FAB -->
+  <button class="fab" id="fabBtn" aria-label="Acciones rapidas">
+    <i data-lucide="plus" style="width:24px;height:24px"></i>
+  </button>
+  <div class="fab-menu" id="fabMenu">
+    <button class="fab-option" id="fabProduct">
+      <i data-lucide="package" style="width:18px;height:18px"></i> Nuevo Producto
+    </button>
+    <button class="fab-option" id="fabBanner">
+      <i data-lucide="image" style="width:18px;height:18px"></i> Nuevo Banner
+    </button>
+  </div>
+
+  <!-- Modal -->
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal">
+      <h2 id="modalTitle">Titulo</h2>
+      <form id="modalForm">
+        <div id="modalBody"></div>
+        <div class="form-actions">
+          <button type="button" class="btn btn-secondary btn-sm" id="modalCancel">Cancelar</button>
+          <button type="submit" class="btn btn-primary btn-sm" id="modalConfirm">Guardar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="../js/storage.js"></script>
+  <script src="../js/supabase.js"></script>
+  <script src="../js/admin.js"></script>
+  <script>if (typeof lucide !== 'undefined') lucide.createIcons();</script>
+</body>
+</html>
