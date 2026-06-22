@@ -1,0 +1,80 @@
+Necesito implementar un acceso administrativo simple mediante contraseña.
+
+OBJETIVO:
+
+Los propietarios administrarán la tienda desde el celular, por lo que no necesito un sistema complejo de usuarios.
+
+---
+
+FUNCIONAMIENTO
+
+Agregar un botón discreto llamado:
+
+"Administración"
+
+o
+
+un acceso oculto desde el logo.
+
+Al presionarlo:
+
+- Solicitar contraseña.
+- Si la contraseña es correcta:
+  - Mostrar el panel de administración.
+- Si es incorrecta:
+  - Mostrar mensaje de error.
+
+---
+
+PANEL ADMIN
+
+Una vez autenticado:
+
+Permitir:
+
+- Agregar productos.
+- Editar productos.
+- Eliminar productos.
+- Restaurar desde Papelera.
+- Administrar categorías.
+- Administrar banners.
+- Cambiar WhatsApp.
+- Cambiar textos.
+
+---
+
+SESIÓN
+
+Mantener la sesión iniciada durante varios días.
+
+Agregar botón:
+
+"Cerrar sesión"
+
+---
+
+COMPATIBILIDAD
+
+Debe funcionar perfectamente desde:
+
+- Android
+- iPhone
+- PC
+
+---
+
+SEGURIDAD
+
+No mostrar enlaces de administración visibles para clientes.
+
+El acceso debe estar protegido mediante contraseña.
+
+---
+
+IMPORTANTE
+
+Indicar claramente:
+
+- Cómo cambiar la contraseña.
+- Dónde se almacena.
+- Qué URL debo abrir para acceder al panel desde cualquier dispositivo.

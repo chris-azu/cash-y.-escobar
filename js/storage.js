@@ -538,8 +538,16 @@ const EH_DATA = (function () {
     lsSet('session', val);
   }
 
+  function getStoredPassword() {
+    return localStorage.getItem(PREFIX + 'admin_password') || 'admin20$';
+  }
+
+  function setStoredPassword(newPw) {
+    localStorage.setItem(PREFIX + 'admin_password', newPw);
+  }
+
   function login(password) {
-    if (password === 'admin20$') {
+    if (password === getStoredPassword()) {
       setSession(true);
       return true;
     }
@@ -577,6 +585,8 @@ const EH_DATA = (function () {
     setSession,
     login,
     logout,
+    getStoredPassword,
+    setStoredPassword,
     genId
   };
 })();

@@ -575,6 +575,37 @@
     document.getElementById('fabBanner').click();
   });
 
+  // ── Change Password ──
+  document.getElementById('changePwBtn').addEventListener('click', () => {
+    showModal('Cambiar Contrasena', `
+      <div class="form-group"><label>Contrasena actual</label><input type="password" class="form-control" id="pwCurrent" required></div>
+      <div class="form-group"><label>Nueva contrasena</label><input type="password" class="form-control" id="pwNew" required minlength="4"></div>
+      <div class="form-group"><label>Confirmar nueva contrasena</label><input type="password" class="form-control" id="pwConfirm" required></div>
+      <div style="font-size:0.75rem;color:var(--text-muted);margin-top:8px">La contrasena se almacena en el navegador (localStorage).</div>
+    `, () => {
+      const current = document.getElementById('pwCurrent').value;
+      const newPw = document.getElementById('pwNew').value;
+      const confirm = document.getElementById('pwConfirm').value;
+      if (current !== EH_DATA.getStoredPassword()) {
+        showToast('Contrasena actual incorrecta.', 'error');
+        closeModal();
+        return;
+      }
+      if (newPw.length < 4) {
+        showToast('La nueva contrasena debe tener al menos 4 caracteres.', 'error');
+        closeModal();
+        return;
+      }
+      if (newPw !== confirm) {
+        showToast('Las contrasenas no coinciden.', 'error');
+        closeModal();
+        return;
+      }
+      EH_DATA.setStoredPassword(newPw);
+      showToast('Contrasena cambiada correctamente.');
+    });
+  });
+
   // ── Logout ──
   document.getElementById('logoutBtn').addEventListener('click', (e) => {
     e.preventDefault();
