@@ -1,0 +1,45 @@
+Necesito simplificar la pantalla de acceso al administrador.
+
+Problemas actuales:
+
+- En móvil aparece un panel lateral de información.
+- El contenido se superpone.
+- Se ve desordenado.
+- Ocupa espacio innecesario.
+
+Cambios solicitados:
+
+1. Eliminar completamente el panel de información lateral.
+
+2. Mostrar únicamente:
+   - Logo.
+   - Título "Panel Administrativo".
+   - Campo contraseña.
+   - Botón "Ingresar".
+
+3. Ocultar información técnica como:
+   - Contraseña por defecto.
+   - LocalStorage.
+   - URL de acceso.
+   - Configuración interna.
+   - Información de Supabase.
+   - Información de desarrollo.
+
+4. Centrar vertical y horizontalmente el formulario.
+
+5. Optimizar para móvil:
+   - Ancho máximo 400px.
+   - Diseño limpio.
+   - Sin elementos flotantes.
+   - Sin scroll horizontal.
+
+6. Mantener apariencia profesional tipo:
+   - Shopify Admin.
+   - Notion Login.
+   - Stripe Dashboard Login.
+
+7. Si se necesita información técnica, moverla a una sección interna del panel accesible únicamente después de iniciar sesión.
+
+Objetivo:
+
+Que el usuario vea únicamente una pantalla limpia de inicio de sesión y nada más.

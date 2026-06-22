@@ -3,11 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin — ElectroHogar</title>
+  <title>Panel Administrativo — ElectroHogar</title>
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%230066cc'/%3E%3Cpath d='M35 50 L50 35 L65 50 L50 65 Z' fill='white'/%3E%3C/svg%3E">
   <link rel="stylesheet" href="../css/style.css">
-  <script src="https://unpkg.com/lucide@latest"></script>
-  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
   <style>
     .login-page {
       min-height: 100vh;
@@ -18,30 +16,28 @@
     }
     .login-card {
       width: 100%;
-      max-width: 420px;
-      padding: 40px 32px;
+      max-width: 400px;
+      padding: 48px 32px;
       text-align: center;
     }
-    .login-card .lock-icon {
-      width: 64px;
-      height: 64px;
-      background: rgba(0, 102, 204, 0.1);
-      border-radius: 50%;
+    .login-card .login-logo {
+      width: 56px;
+      height: 56px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, var(--accent), #003366);
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 1.8rem;
-      margin: 0 auto 20px;
+      font-size: 1.4rem;
+      font-weight: 900;
+      color: #fff;
+      margin: 0 auto 24px;
     }
     .login-card h1 {
-      font-size: 1.3rem;
+      font-size: 1.25rem;
       font-weight: 700;
-      margin-bottom: 4px;
-    }
-    .login-card p {
-      color: var(--text-secondary);
-      font-size: 0.85rem;
-      margin-bottom: 24px;
+      margin-bottom: 32px;
+      color: var(--text-primary);
     }
     .login-error {
       background: rgba(214, 40, 40, 0.1);
@@ -53,264 +49,52 @@
       margin-bottom: 16px;
       display: none;
     }
-    .login-success {
-      background: rgba(45, 106, 79, 0.15);
-      border: 1px solid rgba(45, 106, 79, 0.3);
-      color: var(--green-light);
-      padding: 10px 14px;
-      border-radius: var(--radius-sm);
-      font-size: 0.8rem;
-      margin-bottom: 16px;
-      display: none;
-    }
-    .login-tabs {
-      display: flex;
-      gap: 6px;
-      margin-bottom: 20px;
-    }
-    .login-tab {
-      flex: 1;
-      padding: 8px 6px;
-      border: 1px solid var(--glass-border);
-      border-radius: var(--radius-sm);
-      background: var(--glass-bg);
-      color: var(--text-secondary);
-      font-family: var(--font);
-      font-size: 0.75rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: var(--transition);
-    }
-    .login-tab.active {
-      background: rgba(0,102,204,0.1);
-      border-color: var(--accent);
-      color: var(--accent);
-    }
-    .login-tab:hover { background: rgba(255,255,255,0.08); }
-    .login-method { display: none; }
-    .login-method.active { display: block; }
-    .setup-hint {
-      font-size: 0.7rem;
-      color: var(--text-muted);
-      margin-top: 16px;
-      padding: 12px;
-      background: var(--glass-bg);
-      border-radius: var(--radius-sm);
-      text-align: left;
-      line-height: 1.5;
-    }
-    .setup-hint code {
-      background: rgba(255,255,255,0.08);
-      padding: 1px 5px;
-      border-radius: 3px;
-      font-size: 0.65rem;
-    }
-    .config-status {
-      font-size: 0.75rem;
-      padding: 8px 12px;
-      border-radius: var(--radius-sm);
-      margin-bottom: 16px;
-    }
-    .config-status.ok {
-      background: rgba(45,106,79,0.15);
-      color: var(--green-light);
-    }
-    .config-status.pending {
-      background: rgba(255,255,255,0.06);
-      color: var(--text-muted);
-    }
   </style>
 </head>
 <body>
   <div class="login-page">
     <div class="glass-card login-card">
-      <div class="lock-icon"><i data-lucide="lock" style="width:28px;height:28px"></i></div>
-      <h1>Acceso Administrativo</h1>
-      <p>Administra ElectroHogar</p>
+      <div class="login-logo">EH</div>
+      <h1>Panel Administrativo</h1>
       <div class="login-error" id="loginError"></div>
-      <div class="login-success" id="loginSuccess"></div>
-
-      <div class="login-tabs">
-        <button class="login-tab active" data-method="password">Contrasena</button>
-        <button class="login-tab" data-method="supabase">Supabase</button>
-        <button class="login-tab" data-method="setup">Configurar</button>
-      </div>
 
       <form id="loginForm">
-        <!-- Password Method -->
-        <div class="login-method active" id="method-password">
-          <div class="form-group">
-            <input type="password" class="form-control" id="passwordInput" placeholder="Contrasena" autofocus>
-          </div>
-          <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center">
-            Ingresar
-          </button>
+        <div class="form-group">
+          <input type="password" class="form-control" id="passwordInput" placeholder="Contrasena" autofocus>
         </div>
-
-        <!-- Supabase Method -->
-        <div class="login-method" id="method-supabase">
-          <div class="config-status" id="sbStatus">Cargando...</div>
-          <div class="form-group">
-            <input type="email" class="form-control" id="sbEmail" placeholder="Correo electronico">
-          </div>
-          <div class="form-group">
-            <input type="password" class="form-control" id="sbPassword" placeholder="Contrasena">
-          </div>
-          <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center">
-            Ingresar
-          </button>
-          <div class="setup-hint">
-            <strong>¿Primera vez?</strong> Configura Supabase en la pestana "Configurar" primero.
-          </div>
-        </div>
-
-        <!-- Setup Method -->
-        <div class="login-method" id="method-setup">
-          <p style="font-size:0.8rem;color:var(--text-secondary);margin-bottom:16px">
-            Ingresa las credenciales de tu proyecto Supabase
-          </p>
-          <div class="form-group">
-            <label>Supabase Project URL</label>
-            <input type="url" class="form-control" id="sbUrl" placeholder="https://xxxxx.supabase.co">
-          </div>
-          <div class="form-group">
-            <label>Supabase Anon Key</label>
-            <input type="text" class="form-control" id="sbKey" placeholder="eyJhbGciOiJIUzI1NiIs...">
-          </div>
-          <button type="button" class="btn btn-primary" id="saveSbConfig" style="width:100%;justify-content:center">
-            Guardar Configuracion
-          </button>
-          <div class="setup-hint">
-            <strong>Instrucciones:</strong><br>
-            1. Crea un proyecto en <a href="https://supabase.com" target="_blank">supabase.com</a><br>
-            2. Ve a <strong>Project Settings > API</strong><br>
-            3. Copia la <strong>Project URL</strong> y la <strong>anon public key</strong><br>
-            4. En <strong>SQL Editor</strong>, ejecuta el contenido de <code>supabase-schema.sql</code><br>
-            5. En <strong>Authentication > Users</strong>, crea un usuario admin<br>
-            6. Vuelve aqui, inicia sesion con la pestana "Supabase"
-          </div>
-        </div>
+        <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center">
+          Ingresar
+        </button>
       </form>
-    </div>
-
-    <!-- Info -->
-    <div style="margin-top:24px;padding:16px;background:var(--glass-bg);border-radius:var(--radius-sm);text-align:left;font-size:0.7rem;color:var(--text-muted);line-height:1.6;border:1px solid var(--glass-border)">
-      <strong style="color:var(--text-secondary)">Informacion</strong><br>
-      Contrasena por defecto: <code style="background:rgba(255,255,255,0.08);padding:1px 5px;border-radius:3px">admin20$</code><br>
-      Se almacena en el navegador (localStorage).<br>
-      Para cambiarla: inicia sesion → Config → Cambiar Contrasena.<br>
-      URL de acceso: <code style="background:rgba(255,255,255,0.08);padding:1px 5px;border-radius:3px">https://[tudominio]/admin/login.html</code>
     </div>
   </div>
 
   <script src="../js/storage.js"></script>
-  <script src="../js/supabase.js"></script>
   <script>
     if (EH_DATA.getSession()) {
       window.location.href = 'dashboard.html';
     }
 
-    function updateSbStatus() {
-      const el = document.getElementById('sbStatus');
-      if (EH.isConfigured()) {
-        el.className = 'config-status ok';
-        el.textContent = 'Supabase configurado correctamente';
-      } else {
-        el.className = 'config-status pending';
-        el.textContent = 'Supabase no configurado';
-      }
-    }
-
-    // Load saved config
-    const PREFIX = 'eh_';
-    const savedUrl = localStorage.getItem(PREFIX + 'supabase_url') || '';
-    const savedKey = localStorage.getItem(PREFIX + 'supabase_anon_key') || '';
-    if (savedUrl) document.getElementById('sbUrl').value = savedUrl;
-    if (savedKey) document.getElementById('sbKey').value = savedKey;
-
-    // Tab switching
-    document.querySelectorAll('.login-tab').forEach(tab => {
-      tab.addEventListener('click', () => {
-        document.querySelectorAll('.login-tab').forEach(t => t.classList.remove('active'));
-        tab.classList.add('active');
-        document.querySelectorAll('.login-method').forEach(m => m.classList.remove('active'));
-        document.getElementById('method-' + tab.dataset.method).classList.add('active');
-        document.getElementById('loginError').style.display = 'none';
-        document.getElementById('loginSuccess').style.display = 'none';
-        if (tab.dataset.method === 'supabase') updateSbStatus();
-      });
-    });
-
-    // Save Supabase config
-    document.getElementById('saveSbConfig').addEventListener('click', async () => {
-      const url = document.getElementById('sbUrl').value.trim();
-      const key = document.getElementById('sbKey').value.trim();
-      const errorEl = document.getElementById('loginError');
-      const successEl = document.getElementById('loginSuccess');
-      errorEl.style.display = 'none';
-      successEl.style.display = 'none';
-
-      if (!url || !key) {
-        errorEl.textContent = 'Completa ambos campos.';
-        errorEl.style.display = 'block';
-        return;
-      }
-
-      await EH.init(url, key);
-      successEl.textContent = 'Configuracion guardada. Ahora puedes iniciar sesion con Supabase.';
-      successEl.style.display = 'block';
-      updateSbStatus();
-    });
-
-    // Login form submit
-    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+    document.getElementById('loginForm').addEventListener('submit', (e) => {
       e.preventDefault();
       const errorEl = document.getElementById('loginError');
       errorEl.style.display = 'none';
 
-      const activeMethod = document.querySelector('.login-tab.active').dataset.method;
-      if (activeMethod === 'setup') return;
+      const submitBtn = document.querySelector('#loginForm button[type="submit"]');
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Ingresando...';
 
-      const submitBtn = document.querySelector('#loginForm .login-method.active button[type="submit"]');
-      if (submitBtn) {
-        submitBtn.disabled = true;
-        submitBtn.textContent = 'Ingresando...';
+      const pw = document.getElementById('passwordInput').value.trim();
+      if (EH_DATA.login(pw)) {
+        window.location.href = 'dashboard.html';
+        return;
       }
 
-      try {
-        if (activeMethod === 'password') {
-          const pw = document.getElementById('passwordInput').value.trim();
-          if (EH_DATA.login(pw)) {
-            window.location.href = 'dashboard.html';
-            return;
-          }
-          throw new Error('Contrasena incorrecta.');
-        } else {
-          const email = document.getElementById('sbEmail').value.trim();
-          const password = document.getElementById('sbPassword').value.trim();
-          if (!email || !password) throw new Error('Completa todos los campos.');
-
-          if (!EH.isConfigured()) {
-            throw new Error('Supabase no configurado. Ve a la pestana Configurar primero.');
-          }
-
-          const session = await EH.signIn(email, password);
-          if (!session) throw new Error('Error al iniciar sesion.');
-
-          EH_DATA.setSession(true);
-          window.location.href = 'dashboard.html';
-        }
-      } catch (err) {
-        errorEl.textContent = err.message;
-        errorEl.style.display = 'block';
-        if (submitBtn) {
-          submitBtn.disabled = false;
-          submitBtn.textContent = 'Ingresar';
-        }
-      }
+      errorEl.textContent = 'Contrasena incorrecta.';
+      errorEl.style.display = 'block';
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Ingresar';
     });
-
-    updateSbStatus();
   </script>
 </body>
 </html>
