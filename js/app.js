@@ -291,6 +291,13 @@
 
   loadConfig();
 
+  // ── Cross-tab sync ──
+  window.addEventListener('storage', (e) => {
+    if (e.key && e.key.startsWith('eh_') && e.oldValue !== e.newValue) {
+      location.reload();
+    }
+  });
+
   // ── Toast ──
   function showToast(msg, type = 'success') {
     let toast = document.querySelector('.toast');

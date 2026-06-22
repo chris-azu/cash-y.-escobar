@@ -69,6 +69,7 @@
     products: document.getElementById('panel-products'),
     categories: document.getElementById('panel-categories'),
     banners: document.getElementById('panel-banners'),
+    gallery: document.getElementById('panel-gallery'),
     config: document.getElementById('panel-config'),
     trash: document.getElementById('panel-trash')
   };
@@ -78,6 +79,7 @@
     products: 'Productos',
     categories: 'Categorias',
     banners: 'Banners',
+    gallery: 'Galeria',
     config: 'Configuracion',
     trash: 'Papelera'
   };
@@ -104,6 +106,7 @@
       case 'products': loadProducts(); break;
       case 'categories': loadCategories(); break;
       case 'banners': loadBanners(); break;
+      case 'gallery': loadGallery(); break;
       case 'trash': loadTrash(); break;
     }
   }
@@ -407,6 +410,65 @@
     });
   });
 
+  // ── Gallery ──
+  async function loadGallery() {
+    const images = await EH_DATA.getGallery();
+    const grid = document.getElementById('galleryGrid');
+    const empty = document.getElementById('emptyGallery');
+    if (images.length === 0) {
+      grid.innerHTML = '';
+      empty.style.display = 'block';
+      initLucide();
+      return;
+    }
+    empty.style.display = 'none';
+    grid.innerHTML = images.map((img, i) => `
+      <div class="admin-product-card">
+        <div class="apc-image">
+          ${img.url
+            ? `<img src="${img.url}" alt="${img.alt || ''}" loading="lazy">`
+            : `<div class="no-img"><i data-lucide="image" style="width:28px;height:28px;color:var(--text-muted)"></i></div>`}
+        </div>
+        <div class="apc-body">
+          <div class="apc-name">${img.alt || 'Sin descripcion'}</div>
+          <div class="apc-actions">
+            <button class="btn-delete btn-gallery-delete" data-idx="${i}" style="background:rgba(214,40,40,0.15);color:var(--red)"><i data-lucide="trash-2" style="width:12px;height:12px"></i> Eliminar</button>
+          </div>
+        </div>
+      </div>
+    `).join('');
+    initLucide();
+    grid.querySelectorAll('.btn-gallery-delete').forEach(btn => {
+      btn.addEventListener('click', () => deleteGalleryItem(parseInt(btn.dataset.idx)));
+    });
+  }
+
+  async function deleteGalleryItem(idx) {
+    if (!confirm('¿Eliminar esta imagen de la galeria?')) return;
+    const images = await EH_DATA.getGallery();
+    images.splice(idx, 1);
+    await EH_DATA.saveGallery(images);
+    showToast('Imagen eliminada.');
+    loadGallery();
+  }
+
+  document.getElementById('addGalleryBtn').addEventListener('click', async () => {
+    showModal('Nueva Imagen', `
+      <div class="form-group"><label>URL de imagen</label><div class="file-input-wrapper"><input type="url" class="form-control" id="galleryUrl" placeholder="https://..."><button type="button" class="btn btn-secondary btn-sm" id="galleryUploadBtn">Subir</button><input type="file" id="galleryFile" accept="image/*"></div><img class="img-preview" id="galleryPreview"></div>
+      <div class="form-group"><label>Descripcion</label><input type="text" class="form-control" id="galleryAlt" placeholder="Breve descripcion"></div>
+    `, async () => {
+      const url = document.getElementById('galleryUrl').value.trim();
+      const alt = document.getElementById('galleryAlt').value.trim();
+      if (!url) { showToast('La URL es obligatoria.', 'error'); closeModal(); return; }
+      const images = await EH_DATA.getGallery();
+      images.push({ id: Date.now(), url, alt });
+      await EH_DATA.saveGallery(images);
+      showToast('Imagen agregada.');
+      loadGallery();
+    });
+    setTimeout(() => setupFileUpload('galleryUploadBtn', 'galleryFile', 'galleryUrl', 'galleryPreview'), 50);
+  });
+
   // ── Trash ──
   async function loadTrash() {
     const trash = await EH_DATA.getTrash();
@@ -503,7 +565,10 @@
       cfgFooterPolicy: cfg.footerPolicy || '',
       cfgMetaDesc: cfg.metaDescription || '',
       cfgMetaKeywords: cfg.metaKeywords || '',
-      cfgAboutText: cfg.aboutText || ''
+      cfgAboutText: cfg.aboutText || '',
+      cfgBenefits: (cfg.benefits || []).map(b => `${b.icon}|${b.title}|${b.text}`).join('\n'),
+      cfgTestimonials: (cfg.testimonials || []).map(t => `${t.name}|${t.role}|${t.text}|${t.initial}`).join('\n'),
+      cfgStats: (cfg.stats || []).map(s => `${s.icon}|${s.value}|${s.label}`).join('\n')
     };
     Object.entries(map).forEach(([id, val]) => {
       const el = document.getElementById(id);
@@ -550,7 +615,19 @@
       footerPolicy: document.getElementById('cfgFooterPolicy').value.trim(),
       metaDescription: document.getElementById('cfgMetaDesc').value.trim(),
       metaKeywords: document.getElementById('cfgMetaKeywords').value.trim(),
-      aboutText: document.getElementById('cfgAboutText').value.trim()
+      aboutText: document.getElementById('cfgAboutText').value.trim(),
+      benefits: document.getElementById('cfgBenefits').value.split('\n').filter(Boolean).map(line => {
+        const parts = line.split('|');
+        return { icon: parts[0]?.trim() || 'circle', title: parts[1]?.trim() || '', text: parts[2]?.trim() || '' };
+      }),
+      testimonials: document.getElementById('cfgTestimonials').value.split('\n').filter(Boolean).map(line => {
+        const parts = line.split('|');
+        return { name: parts[0]?.trim() || '', role: parts[1]?.trim() || '', text: parts[2]?.trim() || '', initial: parts[3]?.trim() || '' };
+      }),
+      stats: document.getElementById('cfgStats').value.split('\n').filter(Boolean).map(line => {
+        const parts = line.split('|');
+        return { icon: parts[0]?.trim() || 'circle', value: parts[1]?.trim() || '', label: parts[2]?.trim() || '' };
+      })
     };
     await EH_DATA.saveConfig(updated);
     showToast('Configuracion guardada.');
@@ -572,7 +649,11 @@
 
   document.getElementById('fabBanner').addEventListener('click', () => {
     document.getElementById('fabMenu').classList.remove('open');
-    document.getElementById('fabBanner').click();
+    document.getElementById('addBannerBtn').click();
+  });
+  document.getElementById('fabGallery').addEventListener('click', () => {
+    document.getElementById('fabMenu').classList.remove('open');
+    document.getElementById('addGalleryBtn').click();
   });
 
   // ── Change Password ──

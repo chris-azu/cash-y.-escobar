@@ -1,0 +1,68 @@
+URGENTE: El panel administrativo parece funcionar visualmente pero no está realizando operaciones reales.
+
+Problemas detectados:
+
+1. Al crear un producto:
+   - No aparece en la tienda.
+   - No se guarda.
+
+2. Al editar un producto:
+   - No se reflejan cambios.
+
+3. Al eliminar un producto:
+   - No ocurre nada.
+
+4. Al crear banners:
+   - No se guardan.
+
+5. Al modificar contenido:
+   - No se actualiza la web.
+
+Necesito una revisión completa del flujo CRUD.
+
+Verificar:
+
+- CREATE (crear)
+- READ (leer)
+- UPDATE (actualizar)
+- DELETE (eliminar)
+
+para:
+
+- Productos
+- Categorías
+- Banners
+- Configuración
+- Textos
+
+Además necesito que indiques exactamente:
+
+1. Dónde se almacenan los datos.
+   - LocalStorage
+   - JSON
+   - Supabase
+   - Firebase
+   - Otro
+
+2. Qué función se ejecuta al guardar.
+
+3. Qué función actualiza la interfaz.
+
+4. Por qué actualmente las acciones no producen cambios visibles.
+
+5. Si el panel es únicamente una maqueta visual o si existe persistencia real de datos.
+
+IMPORTANTE:
+
+No quiero botones simulados.
+
+Cada acción del panel debe modificar datos reales y reflejarse inmediatamente en la tienda.
+
+Necesito un sistema completamente funcional donde:
+
+- Crear producto = aparece en la tienda.
+- Editar producto = actualiza la tienda.
+- Eliminar producto = desaparece o pasa a papelera.
+- Crear banner = aparece en la página principal.
+
+Revisar toda la lógica de administración y corregir cualquier funcionalidad incompleta.

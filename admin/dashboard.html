@@ -643,6 +643,10 @@
         <i data-lucide="image"></i>
         <span>Banners</span>
       </a>
+      <a href="#" data-tab="gallery">
+        <i data-lucide="images"></i>
+        <span>Galeria</span>
+      </a>
       <a href="#" data-tab="config">
         <i data-lucide="settings"></i>
         <span>Config</span>
@@ -725,6 +729,19 @@
         <div class="empty-state" id="emptyBanners" style="display:none">
           <i data-lucide="image" style="width:32px;height:32px"></i>
           <p>No hay banners. Agrega uno para promocionar tus productos.</p>
+        </div>
+      </div>
+
+      <!-- ======================== GALLERY ======================== -->
+      <div class="admin-panel" id="panel-gallery">
+        <div class="panel-header">
+          <h2>Galeria</h2>
+          <button class="btn btn-primary btn-sm" id="addGalleryBtn">+ Nueva Imagen</button>
+        </div>
+        <div class="product-grid" id="galleryGrid"></div>
+        <div class="empty-state" id="emptyGallery" style="display:none">
+          <i data-lucide="images" style="width:32px;height:32px"></i>
+          <p>No hay imagenes en la galeria. ¡Agrega la primera!</p>
         </div>
       </div>
 
@@ -857,6 +874,24 @@
               </div>
             </div>
 
+            <div class="config-section-title">Beneficios</div>
+            <div class="form-group">
+              <label>Beneficios (formato: icono|titulo|descripcion, uno por linea)</label>
+              <textarea class="form-control" id="cfgBenefits" rows="5" placeholder="award|Marcas Reconocidas|Trabajamos con las mejores marcas..."></textarea>
+            </div>
+
+            <div class="config-section-title">Testimonios</div>
+            <div class="form-group">
+              <label>Testimonios (formato: nombre|rol|texto|inicial, uno por linea)</label>
+              <textarea class="form-control" id="cfgTestimonials" rows="4" placeholder="Maria G.|Cliente satisfecha|Excelente atencion...|M"></textarea>
+            </div>
+
+            <div class="config-section-title">Estadisticas</div>
+            <div class="form-group">
+              <label>Estadisticas (formato: icono|valor|etiqueta, uno por linea)</label>
+              <textarea class="form-control" id="cfgStats" rows="4" placeholder="calendar|2016|Ano de fundacion"></textarea>
+            </div>
+
             <div class="config-section-title">Footer</div>
             <div class="config-grid">
               <div class="form-group">
@@ -918,6 +953,9 @@
     </button>
     <button class="fab-option" id="fabBanner">
       <i data-lucide="image" style="width:18px;height:18px"></i> Nuevo Banner
+    </button>
+    <button class="fab-option" id="fabGallery">
+      <i data-lucide="images" style="width:18px;height:18px"></i> Nueva Imagen
     </button>
   </div>
 
