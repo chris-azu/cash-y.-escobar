@@ -1,0 +1,22 @@
+<header class="header">
+    <nav class="nav">
+        <div class="nav-container">
+            <a href="{% url 'home' %}" class="nav-logo">
+                {% if site_config.logo %}
+                    <img src="{{ site_config.logo.url }}" alt="{{ site_config.nombre_tienda }}" class="nav-logo-img">
+                {% else %}
+                    {{ site_config.nombre_tienda }}
+                {% endif %}
+            </a>
+            <button class="nav-toggle" id="navToggle" aria-label="Menú">
+                <span></span><span></span><span></span>
+            </button>
+            <ul class="nav-menu" id="navMenu">
+                <li><a href="{% url 'home' %}" class="nav-link">Inicio</a></li>
+                <li><a href="{% url 'productos' %}" class="nav-link">Productos</a></li>
+                <li><a href="{% url 'sobre_nosotros' %}" class="nav-link">Sobre Nosotros</a></li>
+                <li><a href="{% url 'contacto' %}" class="nav-link">Contacto</a></li>
+            </ul>
+        </div>
+    </nav>
+</header>

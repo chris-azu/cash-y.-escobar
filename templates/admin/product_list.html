@@ -1,0 +1,100 @@
+{% extends 'admin/base.html' %}
+{% load static %}
+{% block title %}Productos - Admin{% endblock %}
+
+{% block admin_content %}
+<div class="admin-header">
+    <h1>Productos</h1>
+    <button class="btn btn-primary" onclick="openModal('productModal')"><i class="fas fa-plus"></i> Nuevo Producto</button>
+</div>
+
+<div class="admin-table-container">
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>Imagen</th>
+                <th>Nombre</th>
+                <th>Categoría</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for product in products %}
+            <tr>
+                <td>
+                    {% if product.imagen %}
+                    <img src="{{ product.imagen.url }}" alt="{{ product.nombre }}" class="admin-thumb">
+                    {% else %}
+                    <div class="admin-thumb-placeholder"><i class="fas fa-box"></i></div>
+                    {% endif %}
+                </td>
+                <td>{{ product.nombre }}</td>
+                <td>{{ product.categoria.nombre|default:'-' }}</td>
+                <td>
+                    {% if product.activo %}
+                    <span class="badge badge-success">Activo</span>
+                    {% else %}
+                    <span class="badge badge-danger">Inactivo</span>
+                    {% endif %}
+                </td>
+                <td class="actions-cell">
+                    <button class="btn btn-sm btn-edit" onclick="editProduct({{ product.id }}, '{{ product.nombre|escapejs }}', {{ product.categoria_id|default:'null' }})"><i class="fas fa-edit"></i></button>
+                    <a href="{% url 'product_toggle' product.id %}" class="btn btn-sm btn-{% if product.activo %}warning{% else %}success{% endif %}">
+                        <i class="fas fa-{% if product.activo %}ban{% else %}check{% endif %}"></i>
+                    </a>
+                    <a href="{% url 'product_delete' product.id %}" class="btn btn-sm btn-danger" onclick="return confirm('¿Mover a la papelera?')"><i class="fas fa-trash"></i></a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="5" class="empty-cell">No hay productos registrados.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<div class="modal" id="productModal">
+    <div class="modal-content">
+        <span class="modal-close" onclick="closeModal('productModal')">&times;</span>
+        <h2 id="productModalTitle">Nuevo Producto</h2>
+        <form method="POST" action="{% url 'product_create' %}" enctype="multipart/form-data" id="productForm">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="productName">Nombre del producto</label>
+                <input type="text" name="nombre" id="productName" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label for="productCategory">Categoría</label>
+                <select name="categoria" id="productCategory" class="form-control">
+                    <option value="">Sin categoría</option>
+                    {% for cat in categories %}
+                    <option value="{{ cat.id }}">{{ cat.nombre }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="productImage">Imagen</label>
+                <input type="file" name="imagen" id="productImage" class="form-control" accept="image/*">
+            </div>
+            <button type="submit" class="btn btn-primary btn-block">Guardar</button>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function openModal(id) { document.getElementById(id).classList.add('active'); }
+function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+function editProduct(id, name, categoryId) {
+    document.getElementById('productModalTitle').textContent = 'Editar Producto';
+    document.getElementById('productForm').action = '/admin-panel/products/' + id + '/edit/';
+    document.getElementById('productName').value = name;
+    document.getElementById('productCategory').value = categoryId || '';
+    openModal('productModal');
+}
+document.querySelectorAll('.modal-close').forEach(el => {
+    el.addEventListener('click', function() { this.closest('.modal').classList.remove('active'); });
+});
+</script>
+{% endblock %}

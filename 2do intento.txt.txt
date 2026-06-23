@@ -1,0 +1,11 @@
+Hola, necesito una revisión urgente del panel administrativo. Lo subí a GitHub Pages para que se viera bien en móvil, pero el problema es que los cambios no se guardan. Es decir, agrego productos, banners, categorías, edito, elimino, y al recargar la página todo desaparece. 
+
+Quiero que revises si hay errores en las peticiones POST, si las rutas de guardado llegan correctamente al backend, o si hay algún problema de conexión con la base de datos (ya sea en local o Supabase). 
+
+Asegúrate de verificar:
+1. Las rutas de las peticiones en el panel admin.
+2. Que los cambios se envíen al backend.
+3. Que la base de datos (sea local o Supabase) reciba las solicitudes y las guarde.
+4. Que no haya errores silenciosos en la consola del navegador o en el servidor.
+
+Necesito saber si es un problema de conexión, de lógica de las vistas o de migración. Es urgente, porque necesito que los cambios sean visibles de forma persistente en cualquier dispositivo. Gracias.

@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Sobre Nosotros - {{ site_config.nombre_tienda }}{% endblock %}
+
+{% block content %}
+<section class="page-header">
+    <div class="container">
+        <h1 class="page-title">{{ site_config.about_titulo }}</h1>
+    </div>
+</section>
+
+<section class="section about-section">
+    <div class="container">
+        <div class="about-content">
+            <div class="about-text">
+                <p>{{ site_config.about_texto }}</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="section about-mision-vision">
+    <div class="container">
+        <div class="mision-vision-grid">
+            <div class="mision-card">
+                <i class="fas fa-bullseye"></i>
+                <h3>Misión</h3>
+                <p>{{ site_config.about_mision }}</p>
+            </div>
+            <div class="vision-card">
+                <i class="fas fa-eye"></i>
+                <h3>Visión</h3>
+                <p>{{ site_config.about_vision }}</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="section stats-section">
+    <div class="container">
+        <div class="stats-grid">
+            <div class="stat-card">
+                <span class="stat-number" data-target="{{ site_config.stats_anos }}">{{ site_config.stats_anos }}</span>
+                <span class="stat-label">Años de experiencia</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-number" data-target="{{ site_config.stats_productos }}">{{ site_config.stats_productos }}</span>
+                <span class="stat-label">Productos vendidos</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-number" data-target="{{ site_config.stats_clientes }}">{{ site_config.stats_clientes }}</span>
+                <span class="stat-label">Clientes satisfechos</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-number" data-target="{{ site_config.stats_marcas }}">{{ site_config.stats_marcas }}</span>
+                <span class="stat-label">Marcas disponibles</span>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

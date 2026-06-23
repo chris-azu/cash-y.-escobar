@@ -1,0 +1,41 @@
+{% extends 'admin/base.html' %}
+{% block content %}
+<div class="page-header">
+    <h1>{% if product %}Editar Producto{% else %}Nuevo Producto{% endif %}</h1>
+    <a href="{% url 'admin_product_list' %}" class="btn-secondary">← Volver</a>
+</div>
+<div class="card">
+    <form method="post" class="form" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="nombre">Nombre del producto</label>
+            <input type="text" id="nombre" name="nombre" value="{{ product.nombre|default:'' }}" placeholder="Ej: Refrigerador Samsung 2025" required autofocus>
+        </div>
+        <div class="form-group">
+            <label for="categoria">Categoría</label>
+            <select id="categoria" name="categoria">
+                <option value="">Sin categoría</option>
+                {% for cat in categories %}
+                    <option value="{{ cat.id }}" {% if product and product.categoria_id == cat.id %}selected{% endif %}>{{ cat.nombre }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="imagen">Imagen del producto</label>
+            {% if product and product.imagen_url %}
+                <div class="current-image">
+                    <img src="{{ product.imagen_url }}" alt="{{ product.nombre }}">
+                    <small>Imagen actual. Sube una nueva para reemplazarla.</small>
+                </div>
+            {% endif %}
+            <input type="file" id="imagen" name="imagen" accept="image/*">
+        </div>
+        <div class="form-actions">
+            <button type="submit" class="btn-primary">
+                {% if product %}Guardar Cambios{% else %}Crear Producto{% endif %}
+            </button>
+            <a href="{% url 'admin_product_list' %}" class="btn-secondary">Cancelar</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

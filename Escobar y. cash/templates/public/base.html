@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>{% block title %}{{ site_config.nombre_tienda }}{% endblock %}</title>
+    <meta name="description" content="{{ site_config.meta_description }}">
+    <meta name="keywords" content="{{ site_config.meta_keywords }}">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+    <header class="site-header">
+        <div class="container">
+            <div class="header-inner">
+                <a href="{% url 'home' %}" class="header-brand">
+                    {% if site_config.logo_url %}
+                        <img src="{{ site_config.logo_url }}" alt="{{ site_config.nombre_tienda }}" class="header-logo">
+                    {% endif %}
+                    <span class="header-title">{{ site_config.nombre_tienda }}</span>
+                </a>
+                {% if site_config.slogan %}
+                    <span class="header-slogan">{{ site_config.slogan }}</span>
+                {% endif %}
+                <button class="nav-toggle" id="navToggle" aria-label="Menú">
+                    <span></span><span></span><span></span>
+                </button>
+            </div>
+            <nav class="site-nav" id="siteNav">
+                <a href="{% url 'home' %}" class="nav-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}">Inicio</a>
+                <a href="{% url 'productos' %}" class="nav-link {% if request.resolver_match.url_name == 'productos' %}active{% endif %}">Productos</a>
+                <a href="{% url 'sobre_nosotros' %}" class="nav-link {% if request.resolver_match.url_name == 'sobre_nosotros' %}active{% endif %}">Sobre Nosotros</a>
+                <a href="{% url 'contacto' %}" class="nav-link {% if request.resolver_match.url_name == 'contacto' %}active{% endif %}">Contacto</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="site-main">
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="site-footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-col">
+                    <h4>{{ site_config.nombre_tienda }}</h4>
+                    {% if site_config.footer_descripcion %}
+                        <p>{{ site_config.footer_descripcion }}</p>
+                    {% endif %}
+                </div>
+                <div class="footer-col">
+                    <h4>Contacto</h4>
+                    {% if site_config.direccion %}<p>{{ site_config.direccion }}</p>{% endif %}
+                    {% if site_config.telefono %}<p>{{ site_config.telefono }}</p>{% endif %}
+                    {% if site_config.email %}<p>{{ site_config.email }}</p>{% endif %}
+                    {% if site_config.horarios %}<p>{{ site_config.horarios }}</p>{% endif %}
+                </div>
+                <div class="footer-col">
+                    <h4>Síguenos</h4>
+                    <div class="social-links">
+                        {% if site_config.facebook %}
+                            <a href="{{ site_config.facebook }}" target="_blank" rel="noopener" class="social-link">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
+                            </a>
+                        {% endif %}
+                        {% if site_config.instagram %}
+                            <a href="{{ site_config.instagram }}" target="_blank" rel="noopener" class="social-link">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
+                            </a>
+                        {% endif %}
+                        {% if site_config.tiktok %}
+                            <a href="{{ site_config.tiktok }}" target="_blank" rel="noopener" class="social-link">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M9 12a4 4 0 1 0 4 4V4h3a4 4 0 0 0 4 4"/></svg>
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>{{ site_config.footer_credit }}</p>
+            </div>
+        </div>
+    </footer>
+
+    {% if site_config.whatsapp %}
+    <a href="https://wa.me/{{ site_config.whatsapp|cut:'+'|cut:' ' }}" target="_blank" rel="noopener" class="whatsapp-float" aria-label="WhatsApp">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+    </a>
+    {% endif %}
+
+    <script src="{% static 'js/main.js' %}"></script>
+</body>
+</html>

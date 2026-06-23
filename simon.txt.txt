@@ -1,0 +1,32 @@
+Perfecto.
+
+Antes de migrar a Django o rehacer el proyecto, quiero corregir completamente estos 3 bugs.
+
+Procede con el plan de corrección:
+
+1. Eliminar la autoconfiguración de Supabase en login.html.
+2. Corregir la lógica de lectura para que no ignore localStorage cuando Supabase devuelva arrays vacíos.
+3. Corregir getProductsAll(), getCategoriesFull(), getGallery() y getTrash() usando validaciones adecuadas para arrays vacíos.
+4. Mostrar errores visibles de sincronización en la interfaz en lugar de ocultarlos en console.error.
+
+Además:
+
+5. Quiero que agregues logs temporales visibles en pantalla para confirmar:
+   - Cuándo se lee desde localStorage.
+   - Cuándo se lee desde Supabase.
+   - Cuándo una escritura fue exitosa.
+   - Cuándo una escritura falló.
+
+6. Después de aplicar las correcciones:
+   - Crear un producto.
+   - Editarlo.
+   - Eliminarlo.
+   - Restaurarlo.
+   - Crear un banner.
+   - Recargar la página.
+
+Y confirmar que los datos siguen presentes.
+
+NO quiero rehacer el proyecto todavía.
+
+Primero quiero verificar si estos 3 bugs son la causa real del problema de persistencia.

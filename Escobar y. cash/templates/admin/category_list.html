@@ -1,0 +1,56 @@
+{% extends 'admin/base.html' %}
+{% block content %}
+<div class="page-header">
+    <h1>Categorías</h1>
+    <a href="{% url 'admin_category_create' %}" class="btn-primary">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Nueva Categoría
+    </a>
+</div>
+<div class="card">
+    <div class="table-container">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Estado</th>
+                    <th>Creado</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for category in categories %}
+                <tr>
+                    <td>{{ category.nombre }}</td>
+                    <td>
+                        <span class="badge {% if category.activo %}badge-active{% else %}badge-inactive{% endif %}">
+                            {{ category.activo|yesno:"Activo,Inactivo" }}
+                        </span>
+                    </td>
+                    <td>{{ category.created_at|date:"d/m/Y" }}</td>
+                    <td class="actions-cell">
+                        <a href="{% url 'admin_category_edit' category.pk %}" class="btn-icon" title="Editar">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                        </a>
+                        <a href="{% url 'admin_category_toggle' category.pk %}" class="btn-icon" title="{% if category.activo %}Desactivar{% else %}Activar{% endif %}">
+                            {% if category.activo %}
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="5" width="22" height="14" rx="7" ry="7"/><circle cx="16" cy="12" r="3"/></svg>
+                            {% else %}
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="5" width="22" height="14" rx="7" ry="7"/><circle cx="8" cy="12" r="3"/></svg>
+                            {% endif %}
+                        </a>
+                        <a href="{% url 'admin_category_delete' category.pk %}" class="btn-icon btn-danger" title="Eliminar" onclick="return confirm('¿Mover a la papelera?')">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="4" class="empty-state">No hay categorías registradas</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

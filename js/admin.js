@@ -763,6 +763,47 @@
     });
   }
 
+  // ── DB Status Badge ──
+  function updateDbStatus() {
+    const badge = document.getElementById('dbStatus');
+    if (!badge) return;
+    if (typeof EH !== 'undefined' && EH.isOnline && EH.isOnline()) {
+      badge.textContent = 'Supabase';
+      badge.className = 'supabase';
+    } else {
+      badge.textContent = 'localStorage';
+      badge.className = 'local';
+    }
+  }
+
+  // ── DB Log Console ──
+  const dbLogToggleBtn = document.getElementById('dbLogToggleBtn');
+  const dbLogConsole = document.getElementById('dbLogConsole');
+  const dbLogClear = document.getElementById('dbLogClear');
+  const dbLogToggle = document.getElementById('dbLogToggle');
+
+  if (dbLogToggleBtn && dbLogConsole) {
+    dbLogToggleBtn.addEventListener('click', () => {
+      const isOpen = dbLogConsole.classList.contains('open');
+      dbLogConsole.classList.toggle('open');
+      dbLogToggleBtn.style.opacity = isOpen ? '1' : '0.6';
+    });
+  }
+
+  if (dbLogClear) {
+    dbLogClear.addEventListener('click', () => {
+      const entries = document.getElementById('dbLogEntries');
+      if (entries) entries.innerHTML = '';
+    });
+  }
+
+  if (dbLogToggle) {
+    dbLogToggle.addEventListener('click', () => {
+      dbLogConsole.classList.remove('open');
+      if (dbLogToggleBtn) dbLogToggleBtn.style.opacity = '1';
+    });
+  }
+
   // ── Logout ──
   document.getElementById('logoutBtn').addEventListener('click', (e) => {
     e.preventDefault();
@@ -772,6 +813,8 @@
 
   // ── Init ──
   addLog('Panel iniciado', 'success');
+  updateDbStatus();
+  EH_DATA.showDbLog('Panel admin iniciado — modo: ' + document.getElementById('dbStatus')?.textContent, 'info');
   loadDashboard();
   loadConfigForm();
   updateTrashNotif();

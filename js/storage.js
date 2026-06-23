@@ -14,6 +14,23 @@ const EH_DATA = (function () {
     localStorage.setItem(PREFIX + key, JSON.stringify(data));
   }
 
+  // ── Visible DB log ──
+  const dbLogs = [];
+
+  function showDbLog(msg, type = 'info') {
+    const time = new Date().toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    dbLogs.push({ time, msg, type });
+    const container = document.getElementById('dbLogEntries');
+    if (container) {
+      const line = document.createElement('div');
+      line.className = 'db-log-line db-log-' + type;
+      line.textContent = `[${time}] ${msg}`;
+      container.appendChild(line);
+      container.scrollTop = container.scrollHeight;
+    }
+    console.log(`[DB] ${type}: ${msg}`);
+  }
+
   // ── Default seed data ──
 
   const DEFAULTS = {
@@ -108,14 +125,21 @@ const EH_DATA = (function () {
     if (useSupabase()) {
       try {
         const data = await EH.list('categories');
-        if (data && data.length > 0) return data.map(c => c.name);
-      } catch (e) { console.error('[storage]', e); }
+        if (data && data.length > 0) {
+          showDbLog('getCategories: leído desde Supabase (' + data.length + ' categorías)', 'info');
+          return data.map(c => c.name);
+        }
+        showDbLog('getCategories: Supabase vacío, cayendo a localStorage', 'warn');
+      } catch (e) {
+        showDbLog('getCategories: error en Supabase → ' + e.message, 'error');
+      }
     }
     let cats = lsGet('categories');
     if (!cats || cats.length === 0) {
       cats = [...DEFAULTS.categories];
       lsSet('categories', cats);
     }
+    showDbLog('getCategories: usando localStorage (' + cats.length + ' categorías)', 'success');
     return cats;
   }
 
@@ -123,10 +147,17 @@ const EH_DATA = (function () {
     if (useSupabase()) {
       try {
         const data = await EH.list('categories');
-        if (data) return data;
-      } catch (e) { console.error('[storage]', e); }
+        if (data && data.length > 0) {
+          showDbLog('getCategoriesFull: leído desde Supabase (' + data.length + ' categorías)', 'info');
+          return data;
+        }
+        showDbLog('getCategoriesFull: Supabase vacío, cayendo a localStorage', 'warn');
+      } catch (e) {
+        showDbLog('getCategoriesFull: error en Supabase → ' + e.message, 'error');
+      }
     }
     const names = await getCategories();
+    showDbLog('getCategoriesFull: usando localStorage (' + names.length + ' categorías)', 'success');
     return names.map((n, i) => ({ id: i + 1, name: n, is_active: true, deleted_at: null }));
   }
 
@@ -185,6 +216,7 @@ const EH_DATA = (function () {
       try {
         const data = await EH.list('products');
         if (data && data.length > 0) {
+          showDbLog('getProducts: leído desde Supabase (' + data.length + ' productos)', 'info');
           return data.map(p => ({
             id: p.id,
             name: p.name,
@@ -194,13 +226,17 @@ const EH_DATA = (function () {
             deleted_at: p.deleted_at
           }));
         }
-      } catch (e) { console.error('[storage]', e); }
+        showDbLog('getProducts: Supabase vacío, cayendo a localStorage', 'warn');
+      } catch (e) {
+        showDbLog('getProducts: error en Supabase → ' + e.message, 'error');
+      }
     }
     let p = lsGet('products');
     if (!p) {
       p = JSON.parse(JSON.stringify(DEFAULTS.products));
       lsSet('products', p);
     }
+    showDbLog('getProducts: usando localStorage (' + p.filter(x => !x.deleted_at).length + ' productos activos)', 'success');
     return p.filter(x => !x.deleted_at);
   }
 
@@ -208,7 +244,8 @@ const EH_DATA = (function () {
     if (useSupabase()) {
       try {
         const data = await EH.listAll('products');
-        if (data) {
+        if (data && data.length > 0) {
+          showDbLog('getProductsAll: leído desde Supabase (' + data.length + ' productos)', 'info');
           return data.map(p => ({
             id: p.id,
             name: p.name,
@@ -218,9 +255,14 @@ const EH_DATA = (function () {
             deleted_at: p.deleted_at
           }));
         }
-      } catch (e) { console.error('[storage]', e); }
+        showDbLog('getProductsAll: Supabase vacío, cayendo a localStorage', 'warn');
+      } catch (e) {
+        showDbLog('getProductsAll: error en Supabase → ' + e.message, 'error');
+      }
     }
-    return lsGet('products') || [];
+    const local = lsGet('products') || [];
+    showDbLog('getProductsAll: usando localStorage (' + local.length + ' productos)', 'success');
+    return local;
   }
 
   async function saveProducts(products) {
@@ -271,11 +313,17 @@ const EH_DATA = (function () {
           image_url: entry.image,
           is_active: true
         });
-        if (data) entry.id = data.id;
-      } catch (e) { console.error('[storage]', e); }
+        if (data) {
+          entry.id = data.id;
+          showDbLog('addProduct: insertado en Supabase (id: ' + data.id + ')', 'success');
+        }
+      } catch (e) {
+        showDbLog('addProduct: Supabase falló → ' + e.message, 'error');
+      }
     }
     list.push(entry);
     lsSet('products', list);
+    showDbLog('addProduct: guardado en localStorage (id: ' + entry.id + ')', 'success');
     return entry;
   }
 
@@ -288,7 +336,10 @@ const EH_DATA = (function () {
         if (updates.image !== undefined) record.image_url = updates.image;
         if (updates.is_active !== undefined) record.is_active = updates.is_active;
         await EH.update('products', id, record);
-      } catch (e) { console.error('[storage]', e); }
+        showDbLog('updateProduct: actualizado en Supabase (id: ' + id + ')', 'success');
+      } catch (e) {
+        showDbLog('updateProduct: Supabase falló → ' + e.message, 'error');
+      }
     }
     const list = await getProductsAll();
     const idx = list.findIndex(p => {
@@ -298,6 +349,7 @@ const EH_DATA = (function () {
     if (idx !== -1) {
       Object.assign(list[idx], updates);
       lsSet('products', list);
+      showDbLog('updateProduct: guardado en localStorage (id: ' + id + ')', 'success');
     }
   }
 
@@ -305,7 +357,10 @@ const EH_DATA = (function () {
     if (useSupabase() && typeof id === 'string' && id.includes('-')) {
       try {
         await EH.softDelete('products', id);
-      } catch (e) { console.error('[storage]', e); }
+        showDbLog('deleteProduct: eliminado en Supabase (id: ' + id + ')', 'success');
+      } catch (e) {
+        showDbLog('deleteProduct: Supabase falló → ' + e.message, 'error');
+      }
     }
     const list = await getProductsAll();
     const idx = list.findIndex(p => {
@@ -326,6 +381,7 @@ const EH_DATA = (function () {
       });
       lsSet('trash', trashList);
       lsSet('products', list);
+      showDbLog('deleteProduct: movido a papelera en localStorage (id: ' + id + ')', 'success');
     }
   }
 
@@ -335,16 +391,24 @@ const EH_DATA = (function () {
     if (useSupabase()) {
       try {
         const data = await EH.listAll('trash');
-        if (data) return data.map(t => ({
-          id: t.id,
-          original_table: t.original_table,
-          original_id: t.original_id,
-          data: t.data,
-          deleted_at: t.deleted_at
-        }));
-      } catch (e) { console.error('[storage]', e); }
+        if (data && data.length > 0) {
+          showDbLog('getTrash: leído desde Supabase (' + data.length + ' elementos)', 'info');
+          return data.map(t => ({
+            id: t.id,
+            original_table: t.original_table,
+            original_id: t.original_id,
+            data: t.data,
+            deleted_at: t.deleted_at
+          }));
+        }
+        showDbLog('getTrash: Supabase vacío, cayendo a localStorage', 'warn');
+      } catch (e) {
+        showDbLog('getTrash: error en Supabase → ' + e.message, 'error');
+      }
     }
-    return lsGet('trash') || [];
+    const local = lsGet('trash') || [];
+    showDbLog('getTrash: usando localStorage (' + local.length + ' elementos)', 'success');
+    return local;
   }
 
   async function restoreFromTrash(trashId) {
@@ -400,14 +464,19 @@ const EH_DATA = (function () {
       try {
         const data = await EH.getConfig();
         if (data) {
+          showDbLog('getConfig: leído desde Supabase', 'info');
           return mapConfigFromDB(data);
         }
-      } catch (e) { console.error('[storage]', e); }
+        showDbLog('getConfig: Supabase sin datos, cayendo a localStorage', 'warn');
+      } catch (e) {
+        showDbLog('getConfig: error en Supabase → ' + e.message, 'error');
+      }
     }
     let c = lsGet('config');
     if (!c) {
       c = JSON.parse(JSON.stringify(DEFAULTS.config));
       lsSet('config', c);
+      showDbLog('getConfig: inicializado con valores por defecto', 'info');
     } else {
       let merged = false;
       Object.keys(DEFAULTS.config).forEach(key => {
@@ -417,6 +486,7 @@ const EH_DATA = (function () {
         }
       });
       if (merged) lsSet('config', c);
+      showDbLog('getConfig: usando localStorage', 'success');
     }
     return c;
   }
@@ -493,9 +563,13 @@ const EH_DATA = (function () {
     if (useSupabase()) {
       try {
         await EH.saveConfig(mapConfigToDB(cfg));
-      } catch (e) { console.error('[storage]', e); }
+        showDbLog('saveConfig: guardado en Supabase', 'success');
+      } catch (e) {
+        showDbLog('saveConfig: Supabase falló → ' + e.message, 'error');
+      }
     }
     lsSet('config', cfg);
+    showDbLog('saveConfig: guardado en localStorage', 'success');
   }
 
   // ── Gallery ──
@@ -504,10 +578,18 @@ const EH_DATA = (function () {
     if (useSupabase()) {
       try {
         const data = await EH.list('gallery');
-        if (data) return data.map(g => ({ id: g.id, url: g.image_url, alt: g.alt }));
-      } catch (e) { console.error('[storage]', e); }
+        if (data && data.length > 0) {
+          showDbLog('getGallery: leído desde Supabase (' + data.length + ' imágenes)', 'info');
+          return data.map(g => ({ id: g.id, url: g.image_url, alt: g.alt }));
+        }
+        showDbLog('getGallery: Supabase vacío, cayendo a localStorage', 'warn');
+      } catch (e) {
+        showDbLog('getGallery: error en Supabase → ' + e.message, 'error');
+      }
     }
-    return lsGet('gallery') || [];
+    const local = lsGet('gallery') || [];
+    showDbLog('getGallery: usando localStorage (' + local.length + ' imágenes)', 'success');
+    return local;
   }
 
   async function saveGallery(gallery) {
@@ -523,9 +605,13 @@ const EH_DATA = (function () {
             await EH.insert('gallery', { image_url: g.url, alt: g.alt });
           }
         }
-      } catch (e) { console.error('[storage]', e); }
+        showDbLog('saveGallery: sincronizado con Supabase', 'success');
+      } catch (e) {
+        showDbLog('saveGallery: Supabase falló → ' + e.message, 'error');
+      }
     }
     lsSet('gallery', gallery);
+    showDbLog('saveGallery: guardado en localStorage (' + gallery.length + ' imágenes)', 'success');
   }
 
   // ── Session (local only, Supabase handles auth separately) ──
@@ -587,6 +673,7 @@ const EH_DATA = (function () {
     logout,
     getStoredPassword,
     setStoredPassword,
-    genId
+    genId,
+    showDbLog
   };
 })();

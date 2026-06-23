@@ -1,0 +1,38 @@
+{% extends 'admin/base.html' %}
+{% load static %}
+{% block title %}Papelera - Admin{% endblock %}
+
+{% block admin_content %}
+<div class="admin-header">
+    <h1>Papelera</h1>
+    <p>Elementos eliminados</p>
+</div>
+
+<div class="admin-table-container">
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>Nombre</th>
+                <th>Tipo</th>
+                <th>Eliminado en</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in items %}
+            <tr>
+                <td>{{ item.nombre }}</td>
+                <td><span class="badge badge-info">{{ item.model_name }}</span></td>
+                <td>{{ item.deleted_at|date:'d/m/Y H:i' }}</td>
+                <td class="actions-cell">
+                    <a href="{% url 'trash_restore' item.model_class item.id %}" class="btn btn-sm btn-success"><i class="fas fa-undo"></i> Restaurar</a>
+                    <a href="{% url 'trash_delete_permanent' item.model_class item.id %}" class="btn btn-sm btn-danger" onclick="return confirm('¿Eliminar definitivamente? Esta acción no se puede deshacer.')"><i class="fas fa-trash-alt"></i> Eliminar</a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="4" class="empty-cell">La papelera está vacía.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

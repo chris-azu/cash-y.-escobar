@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Admin - {{ site_config.nombre_tienda }}</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body class="admin-body">
+    {% if user.is_authenticated %}
+    <nav class="admin-nav">
+        <div class="admin-nav-header">
+            <a href="{% url 'dashboard' %}" class="admin-logo">
+                <i class="fas fa-cog"></i> Admin
+            </a>
+            <button class="admin-nav-toggle" id="adminNavToggle" aria-label="Menú">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+        <ul class="admin-nav-menu" id="adminNavMenu">
+            <li><a href="{% url 'dashboard' %}" class="admin-nav-link"><i class="fas fa-chart-pie"></i> Dashboard</a></li>
+            <li><a href="{% url 'product_list' %}" class="admin-nav-link"><i class="fas fa-box"></i> Productos</a></li>
+            <li><a href="{% url 'category_list' %}" class="admin-nav-link"><i class="fas fa-tags"></i> Categorías</a></li>
+            <li><a href="{% url 'banner_list' %}" class="admin-nav-link"><i class="fas fa-images"></i> Banners</a></li>
+            <li><a href="{% url 'config_edit' %}" class="admin-nav-link"><i class="fas fa-sliders-h"></i> Configuración</a></li>
+            <li><a href="{% url 'trash_list' %}" class="admin-nav-link"><i class="fas fa-trash"></i> Papelera</a></li>
+            <li><a href="{% url 'home' %}" class="admin-nav-link" target="_blank"><i class="fas fa-external-link-alt"></i> Ver Tienda</a></li>
+            <li><a href="{% url 'admin_logout' %}" class="admin-nav-link admin-nav-logout"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a></li>
+        </ul>
+    </nav>
+    {% endif %}
+
+    <main class="admin-main">
+        {% if messages %}
+        <div class="messages-container">
+            {% for message in messages %}
+            <div class="message message-{{ message.tags }}">{{ message }}</div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {% block admin_content %}{% endblock %}
+    </main>
+
+    <script src="{% static 'js/admin.js' %}"></script>
+</body>
+</html>

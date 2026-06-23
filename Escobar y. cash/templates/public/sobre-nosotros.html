@@ -1,0 +1,38 @@
+{% extends 'public/base.html' %}
+{% block title %}Sobre Nosotros - {{ site_config.nombre_tienda }}{% endblock %}
+{% block content %}
+<section class="section page-header-section">
+    <div class="container">
+        <h1>Sobre Nosotros</h1>
+    </div>
+</section>
+
+<section class="section">
+    <div class="container">
+        {% if site_config.about_titulo %}
+            <h2>{{ site_config.about_titulo }}</h2>
+        {% endif %}
+        {% if site_config.about_texto %}
+            <div class="about-content">
+                <p>{{ site_config.about_texto|linebreaks }}</p>
+            </div>
+        {% endif %}
+        {% if site_config.about_mision or site_config.about_vision %}
+        <div class="about-grid">
+            {% if site_config.about_mision %}
+            <div class="about-card">
+                <h3>Misión</h3>
+                <p>{{ site_config.about_mision }}</p>
+            </div>
+            {% endif %}
+            {% if site_config.about_vision %}
+            <div class="about-card">
+                <h3>Visión</h3>
+                <p>{{ site_config.about_vision }}</p>
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

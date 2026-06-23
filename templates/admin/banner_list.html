@@ -1,0 +1,96 @@
+{% extends 'admin/base.html' %}
+{% load static %}
+{% block title %}Banners - Admin{% endblock %}
+
+{% block admin_content %}
+<div class="admin-header">
+    <h1>Banners</h1>
+    <button class="btn btn-primary" onclick="openModal('bannerModal')"><i class="fas fa-plus"></i> Nuevo Banner</button>
+</div>
+
+<div class="admin-table-container">
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>Imagen</th>
+                <th>Título</th>
+                <th>Orden</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for banner in banners %}
+            <tr>
+                <td>
+                    {% if banner.imagen %}
+                    <img src="{{ banner.imagen.url }}" alt="{{ banner.titulo }}" class="admin-thumb">
+                    {% else %}
+                    <div class="admin-thumb-placeholder"><i class="fas fa-image"></i></div>
+                    {% endif %}
+                </td>
+                <td>{{ banner.titulo|default:'Sin título' }}</td>
+                <td>{{ banner.sort_order }}</td>
+                <td>
+                    {% if banner.activo %}
+                    <span class="badge badge-success">Activo</span>
+                    {% else %}
+                    <span class="badge badge-danger">Inactivo</span>
+                    {% endif %}
+                </td>
+                <td class="actions-cell">
+                    <button class="btn btn-sm btn-edit" onclick="editBanner({{ banner.id }}, '{{ banner.titulo|escapejs }}', {{ banner.sort_order }})"><i class="fas fa-edit"></i></button>
+                    <a href="{% url 'banner_toggle' banner.id %}" class="btn btn-sm btn-{% if banner.activo %}warning{% else %}success{% endif %}">
+                        <i class="fas fa-{% if banner.activo %}ban{% else %}check{% endif %}"></i>
+                    </a>
+                    <a href="{% url 'banner_delete' banner.id %}" class="btn btn-sm btn-danger" onclick="return confirm('¿Mover a la papelera?')"><i class="fas fa-trash"></i></a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="5" class="empty-cell">No hay banners registrados.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<div class="modal" id="bannerModal">
+    <div class="modal-content">
+        <span class="modal-close" onclick="closeModal('bannerModal')">&times;</span>
+        <h2 id="bannerModalTitle">Nuevo Banner</h2>
+        <form method="POST" action="{% url 'banner_create' %}" enctype="multipart/form-data" id="bannerForm">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="bannerTitle">Título</label>
+                <input type="text" name="titulo" id="bannerTitle" class="form-control" placeholder="Opcional">
+            </div>
+            <div class="form-group">
+                <label for="bannerOrder">Orden</label>
+                <input type="number" name="sort_order" id="bannerOrder" class="form-control" value="0" min="0">
+            </div>
+            <div class="form-group">
+                <label for="bannerImage">Imagen</label>
+                <input type="file" name="imagen" id="bannerImage" class="form-control" accept="image/*" required>
+            </div>
+            <button type="submit" class="btn btn-primary btn-block">Guardar</button>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function openModal(id) { document.getElementById(id).classList.add('active'); }
+function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+function editBanner(id, title, order) {
+    document.getElementById('bannerModalTitle').textContent = 'Editar Banner';
+    document.getElementById('bannerForm').action = '/admin-panel/banners/' + id + '/edit/';
+    document.getElementById('bannerTitle').value = title;
+    document.getElementById('bannerOrder').value = order;
+    document.getElementById('bannerImage').required = false;
+    openModal('bannerModal');
+}
+document.querySelectorAll('.modal-close').forEach(el => {
+    el.addEventListener('click', function() { this.closest('.modal').classList.remove('active'); });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,32 @@
+{% extends 'admin/base.html' %}
+{% block content %}
+<div class="page-header">
+    <h1>{% if banner %}Editar Banner{% else %}Nuevo Banner{% endif %}</h1>
+    <a href="{% url 'admin_banner_list' %}" class="btn-secondary">← Volver</a>
+</div>
+<div class="card">
+    <form method="post" class="form" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="titulo">Título del banner (opcional)</label>
+            <input type="text" id="titulo" name="titulo" value="{{ banner.titulo|default:'' }}" placeholder="Ej: Ofertas de verano">
+        </div>
+        <div class="form-group">
+            <label for="imagen">Imagen del banner</label>
+            {% if banner and banner.imagen_url %}
+                <div class="current-image">
+                    <img src="{{ banner.imagen_url }}" alt="{{ banner.titulo }}">
+                    <small>Imagen actual. Sube una nueva para reemplazarla.</small>
+                </div>
+            {% endif %}
+            <input type="file" id="imagen" name="imagen" accept="image/*" {% if not banner %}required{% endif %}>
+        </div>
+        <div class="form-actions">
+            <button type="submit" class="btn-primary">
+                {% if banner %}Guardar Cambios{% else %}Crear Banner{% endif %}
+            </button>
+            <a href="{% url 'admin_banner_list' %}" class="btn-secondary">Cancelar</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

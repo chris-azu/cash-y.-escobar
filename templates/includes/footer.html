@@ -1,0 +1,36 @@
+<footer class="footer">
+    <div class="footer-container">
+        <div class="footer-grid">
+            <div class="footer-col">
+                <h3>{{ site_config.nombre_tienda }}</h3>
+                <p>{{ site_config.footer_descripcion }}</p>
+            </div>
+            <div class="footer-col">
+                <h3>Horarios</h3>
+                <p>{{ site_config.horarios }}</p>
+                <p><i class="fas fa-phone"></i> {{ site_config.telefono }}</p>
+                <p><i class="fas fa-envelope"></i> {{ site_config.email }}</p>
+            </div>
+            <div class="footer-col">
+                <h3>Síguenos</h3>
+                <div class="footer-social">
+                    {% if site_config.facebook and site_config.facebook != '#' %}
+                        <a href="{{ site_config.facebook }}" target="_blank" rel="noopener"><i class="fab fa-facebook"></i></a>
+                    {% endif %}
+                    {% if site_config.instagram and site_config.instagram != '#' %}
+                        <a href="{{ site_config.instagram }}" target="_blank" rel="noopener"><i class="fab fa-instagram"></i></a>
+                    {% endif %}
+                    {% if site_config.twitter and site_config.twitter != '#' %}
+                        <a href="{{ site_config.twitter }}" target="_blank" rel="noopener"><i class="fab fa-twitter"></i></a>
+                    {% endif %}
+                    {% if site_config.tiktok and site_config.tiktok != '#' %}
+                        <a href="{{ site_config.tiktok }}" target="_blank" rel="noopener"><i class="fab fa-tiktok"></i></a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>{{ site_config.footer_credit }}</p>
+        </div>
+    </div>
+</footer>

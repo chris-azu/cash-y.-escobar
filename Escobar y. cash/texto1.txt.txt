@@ -1,0 +1,408 @@
+# PROYECTO NUEVO DESDE CERO - TIENDA DE ELECTRODOMÉSTICOS PROFESIONAL
+nombre de la tienda : ESCOBAR Y. CASH 
+
+## OBJETIVO
+
+Crear una aplicación completamente nueva desde cero.
+
+NO reutilizar la arquitectura actual.
+
+El proyecto actual servirá únicamente como referencia visual y funcional.
+
+Quiero una arquitectura profesional, escalable y lista para producción.
+
+---
+
+# TECNOLOGÍAS OBLIGATORIAS
+
+Backend:
+- Python
+- Django 5+
+
+Base de datos:
+- PostgreSQL de Supabase
+
+Frontend:
+- Django Templates
+- HTML
+- CSS
+- JavaScript
+
+Almacenamiento de imágenes:
+- Supabase Storage
+
+---
+
+# IMPORTANTE
+
+NO utilizar:
+
+- LocalStorage como almacenamiento principal.
+- JSON como almacenamiento principal.
+- Datos simulados.
+- Botones de prueba.
+- CRUD falso.
+
+Todo debe guardar datos reales.
+
+---
+
+# CONEXIÓN A SUPABASE
+
+Voy a proporcionar la URI PostgreSQL de Supabase.
+
+Configurar Django para utilizar PostgreSQL de Supabase mediante el ORM nativo.
+
+Necesito:
+
+- Configuración correcta en settings.py.
+- Variables de entorno en .env.
+- Conexión estable.
+- Migraciones funcionando.
+
+---
+
+# ESTRUCTURA DEL PROYECTO
+
+Crear estructura profesional.
+
+project/
+
+├── venv/
+├── manage.py
+├── requirements.txt
+├── .env
+├── config/
+├── apps/
+│
+├── accounts/
+├── products/
+├── categories/
+├── banners/
+├── settings_app/
+│
+├── templates/
+├── static/
+├── media/
+├── services/
+└── utils/
+
+Mantener código organizado.
+
+---
+
+# ENTORNO VIRTUAL
+
+Crear automáticamente:
+
+- Entorno virtual.
+- requirements.txt.
+- Dependencias necesarias.
+
+Instalar:
+
+- Django
+- psycopg2-binary
+- python-dotenv
+- Pillow
+- supabase
+
+Dejar proyecto listo para ejecutar.
+
+---
+
+# AUTENTICACIÓN
+
+Implementar autenticación real.
+
+NO utilizar contraseñas hardcodeadas.
+
+Utilizar:
+
+- Usuario administrador Django.
+- Login seguro.
+- Logout.
+- Protección de rutas administrativas.
+
+---
+
+# PANEL ADMINISTRATIVO
+
+Crear panel administrativo personalizado.
+
+No depender únicamente del admin nativo de Django.
+
+Diseño moderno.
+
+Optimizado para:
+
+- Android
+- iPhone
+- Tablet
+- PC
+
+Mobile First.
+
+---
+
+# NAVEGACIÓN DEL ADMIN
+
+Menú inferior en móvil.
+
+Secciones:
+
+- Inicio
+- Productos
+- Categorías
+- Banners
+- Configuración
+- Papelera
+
+Utilizar iconos SVG.
+
+NO utilizar emojis.
+
+---
+
+# PRODUCTOS
+
+Modelo:
+
+- id
+- nombre
+- imagen
+- categoría
+- activo
+- eliminado
+- created_at
+- updated_at
+
+Funciones:
+
+- Crear
+- Editar
+- Eliminar
+- Restaurar
+- Activar
+- Desactivar
+
+---
+
+# CATEGORÍAS
+
+Modelo:
+
+- id
+- nombre
+- activo
+- eliminado
+
+Funciones:
+
+- Crear
+- Editar
+- Eliminar
+- Restaurar
+
+---
+
+# BANNERS
+
+Modelo:
+
+- id
+- título
+- imagen
+- activo
+- eliminado
+
+Funciones:
+
+- Crear
+- Editar
+- Eliminar
+- Restaurar
+
+---
+
+# CONFIGURACIÓN GENERAL
+
+Crear configuración editable desde panel.
+
+Permitir modificar:
+
+- Nombre de la tienda.
+- Logo.
+- WhatsApp.
+- Redes sociales.
+- Footer.
+- Créditos.
+- Textos generales.
+- SEO básico.
+
+NO dejar textos hardcodeados.
+
+Todo debe ser editable.
+
+---
+
+# PAPELERA (SOFT DELETE)
+
+NO eliminar registros inmediatamente.
+
+Al eliminar:
+
+- Mover a papelera.
+
+Desde papelera permitir:
+
+- Restaurar.
+- Eliminar definitivamente.
+
+Aplicar a:
+
+- Productos.
+- Categorías.
+- Banners.
+
+---
+
+# TIENDA PÚBLICA
+
+Mostrar:
+
+- Imagen.
+- Nombre.
+- Categoría.
+
+NO mostrar precios.
+
+---
+
+# IMÁGENES
+
+Las imágenes deben:
+
+- Verse completas.
+- Mantener proporción.
+- Tener zoom suave.
+- Tener vista ampliada tipo Lightbox.
+
+---
+
+# WHATSAPP
+
+Número inicial:
+
++505 7538-1352
+
+Todos los botones de consulta deben abrir WhatsApp.
+
+Mensaje automático:
+
+Hola, me interesa este producto: [NOMBRE DEL PRODUCTO]. ¿Me podrían indicar el precio y disponibilidad?
+
+IMPORTANTE:
+
+El número debe poder modificarse desde el panel.
+
+---
+
+# FLUJO DE DATOS
+
+CRUD completamente funcional.
+
+Verificar:
+
+Crear producto:
+- Se guarda en Supabase.
+- Aparece en la tienda.
+
+Editar producto:
+- Actualiza en Supabase.
+- Se refleja inmediatamente.
+
+Eliminar producto:
+- Va a papelera.
+
+Restaurar:
+- Regresa a la tienda.
+
+Recargar página:
+- Los datos permanecen.
+
+Abrir desde otro dispositivo:
+- Los mismos datos son visibles.
+
+---
+
+# IMÁGENES Y STORAGE
+
+Utilizar Supabase Storage.
+
+NO guardar imágenes en la base de datos.
+
+Guardar únicamente:
+
+- URL de la imagen.
+- Metadatos necesarios.
+
+---
+
+# RESPONSIVE
+
+Mobile First.
+
+Debe funcionar perfectamente en:
+
+- Android
+- iPhone
+- Tablet
+- PC
+
+La experiencia móvil es prioridad.
+
+La experiencia de escritorio NO debe degradarse.
+
+---
+
+# DEPLOYMENT
+
+Preparar para despliegue futuro en:
+
+- Hostinger
+- Render
+- Railway
+- VPS Linux
+
+No depender de GitHub Pages para la administración.
+
+---
+
+# DOCUMENTACIÓN
+
+Al finalizar:
+
+Explicar claramente:
+
+1. Cómo ejecutar el proyecto.
+2. Cómo configurar variables .env.
+3. Cómo crear superusuario.
+4. Cómo ejecutar migraciones.
+5. Cómo acceder al panel administrativo.
+6. Cómo desplegar el proyecto.
+
+---
+
+# RESULTADO ESPERADO
+
+Una tienda profesional de electrodomésticos donde:
+
+- Los datos se almacenan realmente en PostgreSQL de Supabase.
+- Las imágenes se almacenan en Supabase Storage.
+- El panel administrativo es funcional.
+- Todo puede administrarse desde celular.
+- Existe papelera para recuperación.
+- Los cambios son visibles en todos los dispositivos.
+- La arquitectura es profesional y escalable.
+- El proyecto está listo para producción.
