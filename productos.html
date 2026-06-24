@@ -103,6 +103,16 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/storage.js"></script>
   <script src="js/supabase.js"></script>
+  <script>
+    // Inicializar Supabase con credenciales del proyecto
+    (function() {
+      const SUPABASE_URL = 'https://wjzgxrqintzzfjhvhstm.supabase.co';
+      const SUPABASE_KEY = 'sb_publishable_I6tsOKsEXbogDU0uqPdl6w_11kVP5ZD';
+      localStorage.setItem('eh_supabase_url', SUPABASE_URL);
+      localStorage.setItem('eh_supabase_anon_key', SUPABASE_KEY);
+      console.log('[Productos] Supabase configurado con credenciales del proyecto');
+    })();
+  </script>
   <script src="js/app.js"></script>
 </body>
 </html>

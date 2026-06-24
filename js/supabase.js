@@ -5,11 +5,15 @@ const EH = (function () {
   let sb = null;
   let initialized = false;
 
+  // Credenciales del proyecto (configuradas automáticamente)
+  const DEFAULT_SUPABASE_URL = 'https://wjzgxrqintzzfjhvhstm.supabase.co';
+  const DEFAULT_SUPABASE_KEY = 'sb_publishable_I6tsOKsEXbogDU0uqPdl6w_11kVP5ZD';
+
   function getClient() {
     if (sb) return sb;
     if (typeof supabase !== 'undefined') {
-      const url = localStorage.getItem(PREFIX + 'supabase_url') || '';
-      const key = localStorage.getItem(PREFIX + 'supabase_anon_key') || '';
+      const url = localStorage.getItem(PREFIX + 'supabase_url') || DEFAULT_SUPABASE_URL;
+      const key = localStorage.getItem(PREFIX + 'supabase_anon_key') || DEFAULT_SUPABASE_KEY;
       if (url && key) {
         sb = supabase.createClient(url, key);
       }

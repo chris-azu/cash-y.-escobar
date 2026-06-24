@@ -216,12 +216,22 @@
     showModal('Editar Producto', `
       <div class="form-group"><label>Nombre *</label><input type="text" class="form-control" id="prodName" value="${(p.name || '').replace(/"/g, '&quot;')}" required></div>
       <div class="form-group"><label>Categoria *</label><select class="form-control" id="prodCategory" required>${cats.map(c => `<option value="${c}" ${c === p.category ? 'selected' : ''}>${c}</option>`).join('')}</select></div>
-      <div class="form-group"><label>Imagen (URL)</label><div class="file-input-wrapper"><input type="url" class="form-control" id="prodImageUrl" value="${p.image || ''}" placeholder="https://..."><button type="button" class="btn btn-secondary btn-sm" id="prodUploadBtn">Subir</button><input type="file" id="prodFile" accept="image/*"></div>${p.image ? `<img src="${p.image}" class="img-preview show" id="prodPreview">` : `<img class="img-preview" id="prodPreview">`}</div>
+      <div class="form-group">
+        <label>Imagen del Producto</label>
+        <input type="file" id="prodFile" accept="image/*" style="margin-bottom:8px">
+        <div id="prodPreview" style="margin-top:8px;display:${p.image ? 'block' : 'none'}">
+          <img src="${p.image || ''}" style="max-width:100%;max-height:200px;border-radius:8px">
+        </div>
+      </div>
       <div class="form-group"><label>Estado</label><select class="form-control" id="prodActive"><option value="1" ${p.is_active ? 'selected' : ''}>Activo</option><option value="0" ${!p.is_active ? 'selected' : ''}>Inactivo</option></select></div>
     `, async () => {
       const name = document.getElementById('prodName').value.trim();
       const category = document.getElementById('prodCategory').value;
-      const image = document.getElementById('prodImageUrl').value.trim();
+      const fileInput = document.getElementById('prodFile');
+      let image = p.image || '';
+      if (fileInput.files && fileInput.files[0]) {
+        image = await readFileAsDataURL(fileInput.files[0]);
+      }
       const is_active = document.getElementById('prodActive').value === '1';
       if (!name) { showToast('El nombre es obligatorio.', 'error'); closeModal(); return; }
       addLog(`Editando producto: "${name}"`, 'info');
@@ -229,7 +239,20 @@
       showToast('Producto actualizado.');
       loadProducts();
     });
-    setTimeout(() => setupFileUpload('prodUploadBtn', 'prodFile', 'prodImageUrl', 'prodPreview'), 50);
+    const prodFile = document.getElementById('prodFile');
+    const prodPreview = document.getElementById('prodPreview');
+    if (prodFile && prodPreview) {
+      prodFile.addEventListener('change', () => {
+        if (prodFile.files && prodFile.files[0]) {
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            prodPreview.querySelector('img').src = e.target.result;
+            prodPreview.style.display = 'block';
+          };
+          reader.readAsDataURL(prodFile.files[0]);
+        }
+      });
+    }
   }
 
   async function toggleProduct(id) {
@@ -263,21 +286,109 @@
     showModal('Nuevo Producto', `
       <div class="form-group"><label>Nombre *</label><input type="text" class="form-control" id="prodName" required></div>
       <div class="form-group"><label>Categoria *</label><select class="form-control" id="prodCategory" required>${cats.map(c => `<option value="${c}">${c}</option>`).join('')}</select></div>
-      <div class="form-group"><label>Imagen (URL)</label><div class="file-input-wrapper"><input type="url" class="form-control" id="prodImageUrl" placeholder="https://..."><button type="button" class="btn btn-secondary btn-sm" id="prodUploadBtn">Subir</button><input type="file" id="prodFile" accept="image/*"></div><img class="img-preview" id="prodPreview"></div>
+      <div class="form-group">
+        <label>Imagen del Producto</label>
+        <input type="file" id="prodFile" accept="image/*">
+        <div id="prodPreview" style="margin-top:8px;display:none">
+          <img style="max-width:100%;max-height:200px;border-radius:8px">
+        </div>
+      </div>
     `, async () => {
       const name = document.getElementById('prodName').value.trim();
       const category = document.getElementById('prodCategory').value;
-      const image = document.getElementById('prodImageUrl').value.trim();
+      const fileInput = document.getElementById('prodFile');
+      let image = '';
+      if (fileInput.files && fileInput.files[0]) {
+        image = await readFileAsDataURL(fileInput.files[0]);
+      }
       if (!name) { showToast('El nombre es obligatorio.', 'error'); closeModal(); return; }
       addLog(`Creando producto: "${name}" (${category})...`, 'info');
       await EH_DATA.addProduct({ name, category, image });
       showToast('Producto creado.');
       loadProducts();
     });
-    setTimeout(() => setupFileUpload('prodUploadBtn', 'prodFile', 'prodImageUrl', 'prodPreview'), 50);
+    const prodFile = document.getElementById('prodFile');
+    const prodPreview = document.getElementById('prodPreview');
+    if (prodFile && prodPreview) {
+      prodFile.addEventListener('change', () => {
+        if (prodFile.files && prodFile.files[0]) {
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            prodPreview.querySelector('img').src = e.target.result;
+            prodPreview.style.display = 'block';
+          };
+          reader.readAsDataURL(prodFile.files[0]);
+        }
+      });
+    }
   }
 
-  // ── File upload helper ──
+  // ── Image selector from gallery ──
+  function setupImageSelector(selectBtnId, removeBtnId, inputId, previewId) {
+    const selectBtn = document.getElementById(selectBtnId);
+    const removeBtn = document.getElementById(removeBtnId);
+    const input = document.getElementById(inputId);
+    const preview = document.getElementById(previewId);
+
+    if (selectBtn) {
+      selectBtn.addEventListener('click', async () => {
+        await showImageGalleryModal(inputId, previewId);
+      });
+    }
+
+    if (removeBtn) {
+      removeBtn.addEventListener('click', () => {
+        input.value = '';
+        preview.style.display = 'none';
+        preview.querySelector('img').src = '';
+      });
+    }
+  }
+
+  async function showImageGalleryModal(inputId, previewId) {
+    const galleryImages = await EH_DATA.getGallery();
+    const modalContent = document.createElement('div');
+    modalContent.className = 'gallery-modal-content';
+
+    if (galleryImages.length === 0) {
+      modalContent.innerHTML = `
+        <p style="text-align:center;padding:20px;color:var(--text-muted)">
+          No hay imágenes en la galería. Ve a la pestaña "Galería" para agregar imágenes primero.
+        </p>
+      `;
+    } else {
+      modalContent.innerHTML = `
+        <div class="gallery-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:10px;max-height:400px;overflow-y:auto;padding:10px">
+          ${galleryImages.map(img => `
+            <div class="gallery-item" data-url="${img.url}" style="cursor:pointer;border:2px solid transparent;border-radius:8px;overflow:hidden">
+              <img src="${img.url}" alt="${img.alt || ''}" style="width:100%;height:100px;object-fit:cover">
+            </div>
+          `).join('')}
+        </div>
+      `;
+
+      modalContent.querySelectorAll('.gallery-item').forEach(item => {
+        item.addEventListener('click', () => {
+          const url = item.dataset.url;
+          document.getElementById(inputId).value = url;
+          const preview = document.getElementById(previewId);
+          preview.style.display = 'flex';
+          preview.querySelector('img').src = url;
+          closeModal();
+        });
+        item.addEventListener('mouseenter', () => {
+          item.style.borderColor = 'var(--accent)';
+        });
+        item.addEventListener('mouseleave', () => {
+          item.style.borderColor = 'transparent';
+        });
+      });
+    }
+
+    showModal('Seleccionar Imagen de Galería', modalContent.outerHTML, () => {}, false);
+  }
+
+  // ── File upload helper (mantenido para compatibilidad) ──
   function setupFileUpload(btnId, fileId, urlId, previewId) {
     const uploadBtn = document.getElementById(btnId);
     const fileInput = document.getElementById(fileId);
@@ -403,10 +514,20 @@
     const banners = cfg.banners || [];
     const current = banners[idx] || { url: '', alt: '' };
     showModal(`Banner ${idx + 1}`, `
-      <div class="form-group"><label>URL de imagen</label><input type="url" class="form-control" id="banUrl" value="${current.url}" placeholder="https://..."></div>
+      <div class="form-group">
+        <label>Imagen del Banner</label>
+        <input type="file" id="banFile" accept="image/*" style="margin-bottom:8px">
+        <div id="banPreview" style="margin-top:8px;display:${current.url ? 'block' : 'none'}">
+          <img src="${current.url}" style="max-width:100%;max-height:200px;border-radius:8px">
+        </div>
+      </div>
       <div class="form-group"><label>Texto alternativo</label><input type="text" class="form-control" id="banAlt" value="${(current.alt || '').replace(/"/g, '&quot;')}"></div>
     `, async () => {
-      const url = document.getElementById('banUrl').value.trim();
+      const fileInput = document.getElementById('banFile');
+      let url = current.url || '';
+      if (fileInput.files && fileInput.files[0]) {
+        url = await readFileAsDataURL(fileInput.files[0]);
+      }
       const alt = document.getElementById('banAlt').value.trim();
       if (!cfg.banners) cfg.banners = [];
       cfg.banners[idx] = { ...(cfg.banners[idx] || { id: idx + 1 }), url, alt };
@@ -415,6 +536,20 @@
       showToast('Banner actualizado.');
       loadBanners();
     });
+    const banFile = document.getElementById('banFile');
+    const banPreview = document.getElementById('banPreview');
+    if (banFile && banPreview) {
+      banFile.addEventListener('change', () => {
+        if (banFile.files && banFile.files[0]) {
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            banPreview.querySelector('img').src = e.target.result;
+            banPreview.style.display = 'block';
+          };
+          reader.readAsDataURL(banFile.files[0]);
+        }
+      });
+    }
   }
 
   async function deleteBanner(idx) {
@@ -433,10 +568,20 @@
   document.getElementById('addBannerBtn').addEventListener('click', async () => {
     cfg = await EH_DATA.getConfig();
     showModal('Nuevo Banner', `
-      <div class="form-group"><label>URL de imagen</label><input type="url" class="form-control" id="banUrl" placeholder="https://..."></div>
+      <div class="form-group">
+        <label>Imagen del Banner</label>
+        <input type="file" id="banFile" accept="image/*">
+        <div id="banPreview" style="margin-top:8px;display:none">
+          <img style="max-width:100%;max-height:200px;border-radius:8px">
+        </div>
+      </div>
       <div class="form-group"><label>Texto alternativo</label><input type="text" class="form-control" id="banAlt" placeholder="Oferta especial"></div>
     `, async () => {
-      const url = document.getElementById('banUrl').value.trim();
+      const fileInput = document.getElementById('banFile');
+      let url = '';
+      if (fileInput.files && fileInput.files[0]) {
+        url = await readFileAsDataURL(fileInput.files[0]);
+      }
       const alt = document.getElementById('banAlt').value.trim();
       if (!cfg.banners) cfg.banners = [];
       cfg.banners.push({ id: cfg.banners.length + 1, url, alt });
@@ -445,40 +590,77 @@
       showToast('Banner creado.');
       loadBanners();
     });
+    const banFile = document.getElementById('banFile');
+    const banPreview = document.getElementById('banPreview');
+    if (banFile && banPreview) {
+      banFile.addEventListener('change', () => {
+        if (banFile.files && banFile.files[0]) {
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            banPreview.querySelector('img').src = e.target.result;
+            banPreview.style.display = 'block';
+          };
+          reader.readAsDataURL(banFile.files[0]);
+        }
+      });
+    }
   });
 
-  // ── Gallery ──
+  // ── Gallery (ahora muestra todos los productos) ──
   async function loadGallery() {
-    const images = await EH_DATA.getGallery();
+    const products = await EH_DATA.getProductsAll();
+    const searchTerm = document.getElementById('gallerySearch')?.value?.toLowerCase() || '';
     const grid = document.getElementById('galleryGrid');
     const empty = document.getElementById('emptyGallery');
-    if (images.length === 0) {
+
+    // Filtrar productos por búsqueda
+    const filteredProducts = products.filter(p => {
+      if (searchTerm) {
+        return p.name.toLowerCase().includes(searchTerm) ||
+               p.category.toLowerCase().includes(searchTerm);
+      }
+      return true;
+    });
+
+    if (filteredProducts.length === 0) {
       grid.innerHTML = '';
       empty.style.display = 'block';
       initLucide();
       return;
     }
     empty.style.display = 'none';
-    grid.innerHTML = images.map((img, i) => `
+    grid.innerHTML = filteredProducts.map((p, i) => `
       <div class="admin-product-card">
         <div class="apc-image">
-          ${img.url
-            ? `<img src="${img.url}" alt="${img.alt || ''}" loading="lazy">`
+          ${p.image
+            ? `<img src="${p.image}" alt="${p.name}" loading="lazy">`
             : `<div class="no-img"><i data-lucide="image" style="width:28px;height:28px;color:var(--text-muted)"></i></div>`}
         </div>
         <div class="apc-body">
-          <div class="apc-name">${img.alt || 'Sin descripcion'}</div>
+          <div class="apc-name">${p.name}</div>
+          <div class="apc-cat">${p.category}</div>
           <div class="apc-actions">
-            <button class="btn-delete btn-gallery-delete" data-idx="${i}" style="background:rgba(214,40,40,0.15);color:var(--red)"><i data-lucide="trash-2" style="width:12px;height:12px"></i> Eliminar</button>
+            <button class="btn-edit" data-id="${p.id}"><i data-lucide="edit-2" style="width:12px;height:12px"></i> Editar</button>
+            <button class="btn-toggle ${p.is_active ? '' : 'inactive'}" data-id="${p.id}">${p.is_active ? 'Activo' : 'Inactivo'}</button>
+            <button class="btn-delete" data-id="${p.id}"><i data-lucide="trash-2" style="width:12px;height:12px"></i> Eliminar</button>
           </div>
         </div>
       </div>
     `).join('');
     initLucide();
-    grid.querySelectorAll('.btn-gallery-delete').forEach(btn => {
-      btn.addEventListener('click', () => deleteGalleryItem(parseInt(btn.dataset.idx)));
+    grid.querySelectorAll('.btn-edit').forEach(btn => {
+      btn.addEventListener('click', () => editProduct(btn.dataset.id));
+    });
+    grid.querySelectorAll('.btn-toggle').forEach(btn => {
+      btn.addEventListener('click', () => toggleProduct(btn.dataset.id));
+    });
+    grid.querySelectorAll('.btn-delete').forEach(btn => {
+      btn.addEventListener('click', () => deleteProduct(btn.dataset.id));
     });
   }
+
+  // Evento de búsqueda en galería
+  document.getElementById('gallerySearch')?.addEventListener('input', loadGallery);
 
   async function deleteGalleryItem(idx) {
     if (!confirm('¿Eliminar esta imagen de la galeria?')) return;

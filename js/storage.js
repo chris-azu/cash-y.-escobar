@@ -114,9 +114,9 @@ const EH_DATA = (function () {
   }
 
   // ── Use Supabase if available, fallback to localStorage ──
-
+  // TEMPORALMENTE DESACTIVADO: Usar solo LocalStorage para asegurar funcionalidad
   function useSupabase() {
-    return typeof EH !== 'undefined' && EH.isOnline && EH.isOnline();
+    return false; // Forzar uso de LocalStorage
   }
 
   // ── Categories ──
@@ -129,15 +129,16 @@ const EH_DATA = (function () {
           showDbLog('getCategories: leído desde Supabase (' + data.length + ' categorías)', 'info');
           return data.map(c => c.name);
         }
-        showDbLog('getCategories: Supabase vacío, cayendo a localStorage', 'warn');
+        showDbLog('getCategories: Supabase vacío, usando localStorage', 'warn');
       } catch (e) {
-        showDbLog('getCategories: error en Supabase → ' + e.message, 'error');
+        showDbLog('getCategories: error en Supabase → ' + e.message + ', usando localStorage', 'error');
       }
     }
     let cats = lsGet('categories');
     if (!cats || cats.length === 0) {
       cats = [...DEFAULTS.categories];
       lsSet('categories', cats);
+      showDbLog('getCategories: inicializado con datos por defecto', 'info');
     }
     showDbLog('getCategories: usando localStorage (' + cats.length + ' categorías)', 'success');
     return cats;
@@ -162,21 +163,8 @@ const EH_DATA = (function () {
   }
 
   async function saveCategories(cats) {
-    if (useSupabase()) {
-      try {
-        const existing = await EH.listAll('categories');
-        const existingNames = existing.map(c => c.name);
-        const toDelete = existing.filter(c => !cats.includes(c.name));
-        const toAdd = cats.filter(c => !existingNames.includes(c.name));
-        for (const c of toDelete) {
-          await EH.remove('categories', c.id);
-        }
-        for (const c of toAdd) {
-          await EH.insert('categories', { name: c });
-        }
-      } catch (e) { console.error('[storage]', e); }
-    }
     lsSet('categories', cats);
+    showDbLog('saveCategories: guardado en localStorage', 'success');
   }
 
   async function addCategory(name) {
@@ -226,15 +214,17 @@ const EH_DATA = (function () {
             deleted_at: p.deleted_at
           }));
         }
-        showDbLog('getProducts: Supabase vacío, cayendo a localStorage', 'warn');
+        showDbLog('getProducts: Supabase vacío, usando localStorage', 'warn');
       } catch (e) {
-        showDbLog('getProducts: error en Supabase → ' + e.message, 'error');
+        showDbLog('getProducts: error en Supabase → ' + e.message + ', usando localStorage', 'error');
       }
     }
     let p = lsGet('products');
-    if (!p) {
+    // SOLO inicializar con defaults si localStorage está completamente vacío
+    if (p === null || p === undefined || p.length === 0) {
       p = JSON.parse(JSON.stringify(DEFAULTS.products));
       lsSet('products', p);
+      showDbLog('getProducts: inicializado con datos por defecto', 'info');
     }
     showDbLog('getProducts: usando localStorage (' + p.filter(x => !x.deleted_at).length + ' productos activos)', 'success');
     return p.filter(x => !x.deleted_at);
@@ -305,22 +295,7 @@ const EH_DATA = (function () {
       deleted_at: null,
       _new: true
     };
-    if (useSupabase()) {
-      try {
-        const data = await EH.insert('products', {
-          name: entry.name,
-          category: entry.category,
-          image_url: entry.image,
-          is_active: true
-        });
-        if (data) {
-          entry.id = data.id;
-          showDbLog('addProduct: insertado en Supabase (id: ' + data.id + ')', 'success');
-        }
-      } catch (e) {
-        showDbLog('addProduct: Supabase falló → ' + e.message, 'error');
-      }
-    }
+    // Guardar directamente en localStorage
     list.push(entry);
     lsSet('products', list);
     showDbLog('addProduct: guardado en localStorage (id: ' + entry.id + ')', 'success');
@@ -328,50 +303,31 @@ const EH_DATA = (function () {
   }
 
   async function updateProduct(id, updates) {
-    if (useSupabase() && typeof id === 'string' && id.includes('-')) {
-      try {
-        const record = {};
-        if (updates.name !== undefined) record.name = updates.name;
-        if (updates.category !== undefined) record.category = updates.category;
-        if (updates.image !== undefined) record.image_url = updates.image;
-        if (updates.is_active !== undefined) record.is_active = updates.is_active;
-        await EH.update('products', id, record);
-        showDbLog('updateProduct: actualizado en Supabase (id: ' + id + ')', 'success');
-      } catch (e) {
-        showDbLog('updateProduct: Supabase falló → ' + e.message, 'error');
-      }
-    }
     const list = await getProductsAll();
-    const idx = list.findIndex(p => {
-      if (typeof id === 'string' && id.includes('-')) return p.id === id;
-      return p.id === id;
-    });
+    const idx = list.findIndex(p => String(p.id) === String(id));
     if (idx !== -1) {
       Object.assign(list[idx], updates);
       lsSet('products', list);
+      console.log('[updateProduct] Producto actualizado:', list[idx].name);
       showDbLog('updateProduct: guardado en localStorage (id: ' + id + ')', 'success');
+    } else {
+      console.error('[updateProduct] Producto no encontrado con ID:', id, 'en lista de', list.length, 'productos');
     }
   }
 
   async function deleteProduct(id) {
-    if (useSupabase() && typeof id === 'string' && id.includes('-')) {
-      try {
-        await EH.softDelete('products', id);
-        showDbLog('deleteProduct: eliminado en Supabase (id: ' + id + ')', 'success');
-      } catch (e) {
-        showDbLog('deleteProduct: Supabase falló → ' + e.message, 'error');
-      }
-    }
     const list = await getProductsAll();
-    const idx = list.findIndex(p => {
-      if (typeof id === 'string' && id.includes('-')) return p.id === id;
-      return p.id === id;
-    });
+    const idx = list.findIndex(p => String(p.id) === String(id));
     if (idx !== -1) {
       const item = list[idx];
       item.deleted_at = new Date().toISOString();
       item.is_active = false;
-      const trashList = await getTrash();
+
+      // Guardar productos actualizados
+      lsSet('products', list);
+
+      // Obtener y actualizar papelera directamente
+      let trashList = lsGet('trash') || [];
       trashList.push({
         id: genId(),
         original_table: 'products',
@@ -380,8 +336,11 @@ const EH_DATA = (function () {
         deleted_at: new Date().toISOString()
       });
       lsSet('trash', trashList);
-      lsSet('products', list);
+
+      console.log('[deleteProduct] Producto eliminado, papelera ahora tiene:', trashList.length);
       showDbLog('deleteProduct: movido a papelera en localStorage (id: ' + id + ')', 'success');
+    } else {
+      console.error('[deleteProduct] Producto no encontrado con ID:', id);
     }
   }
 
@@ -412,48 +371,48 @@ const EH_DATA = (function () {
   }
 
   async function restoreFromTrash(trashId) {
-    if (useSupabase()) {
-      try {
-        await EH.restore(trashId);
-        return true;
-      } catch (e) { console.error('[storage]', e); }
+    let trashList = lsGet('trash') || [];
+    const entry = trashList.find(t => String(t.id) === String(trashId));
+    if (!entry) {
+      console.error('[restoreFromTrash] Entrada no encontrada con ID:', trashId);
+      return false;
     }
-    let trashList = await getTrash();
-    const entry = trashList.find(t => t.id === trashId);
-    if (!entry) return false;
     const table = entry.original_table;
     if (table === 'products') {
       let list = await getProductsAll();
-      const item = list.find(p => p.id === entry.original_id);
+      const item = list.find(p => String(p.id) === String(entry.original_id));
       if (item) {
         item.deleted_at = null;
         item.is_active = true;
         lsSet('products', list);
+        console.log('[restoreFromTrash] Producto restaurado:', item.name);
+      } else {
+        console.error('[restoreFromTrash] Producto no encontrado en lista con ID:', entry.original_id);
       }
     }
-    trashList = trashList.filter(t => t.id !== trashId);
+    trashList = trashList.filter(t => String(t.id) !== String(trashId));
     lsSet('trash', trashList);
+    showDbLog('restoreFromTrash: restaurado desde papelera', 'success');
     return true;
   }
 
   async function permanentDeleteTrash(trashId) {
-    if (useSupabase()) {
-      try {
-        await EH.permanentDelete(trashId);
-        return true;
-      } catch (e) { console.error('[storage]', e); }
+    let trashList = lsGet('trash') || [];
+    const entry = trashList.find(t => String(t.id) === String(trashId));
+    if (!entry) {
+      console.error('[permanentDeleteTrash] Entrada no encontrada con ID:', trashId);
+      return false;
     }
-    let trashList = await getTrash();
-    const entry = trashList.find(t => t.id === trashId);
-    if (!entry) return false;
     const table = entry.original_table;
     if (table === 'products') {
       let list = await getProductsAll();
-      list = list.filter(p => p.id !== entry.original_id);
+      list = list.filter(p => String(p.id) !== String(entry.original_id));
       lsSet('products', list);
+      console.log('[permanentDeleteTrash] Producto eliminado permanentemente con ID:', entry.original_id);
     }
-    trashList = trashList.filter(t => t.id !== trashId);
+    trashList = trashList.filter(t => String(t.id) !== String(trashId));
     lsSet('trash', trashList);
+    showDbLog('permanentDeleteTrash: eliminado permanentemente', 'success');
     return true;
   }
 
@@ -467,9 +426,9 @@ const EH_DATA = (function () {
           showDbLog('getConfig: leído desde Supabase', 'info');
           return mapConfigFromDB(data);
         }
-        showDbLog('getConfig: Supabase sin datos, cayendo a localStorage', 'warn');
+        showDbLog('getConfig: Supabase sin datos, usando localStorage', 'warn');
       } catch (e) {
-        showDbLog('getConfig: error en Supabase → ' + e.message, 'error');
+        showDbLog('getConfig: error en Supabase → ' + e.message + ', usando localStorage', 'error');
       }
     }
     let c = lsGet('config');
@@ -560,14 +519,6 @@ const EH_DATA = (function () {
   }
 
   async function saveConfig(cfg) {
-    if (useSupabase()) {
-      try {
-        await EH.saveConfig(mapConfigToDB(cfg));
-        showDbLog('saveConfig: guardado en Supabase', 'success');
-      } catch (e) {
-        showDbLog('saveConfig: Supabase falló → ' + e.message, 'error');
-      }
-    }
     lsSet('config', cfg);
     showDbLog('saveConfig: guardado en localStorage', 'success');
   }
@@ -593,23 +544,6 @@ const EH_DATA = (function () {
   }
 
   async function saveGallery(gallery) {
-    if (useSupabase()) {
-      try {
-        const existing = await EH.listAll('gallery');
-        for (const g of existing) {
-          const stillExists = gallery.some(ng => ng.id === g.id);
-          if (!stillExists) await EH.remove('gallery', g.id);
-        }
-        for (const g of gallery) {
-          if (g._new) {
-            await EH.insert('gallery', { image_url: g.url, alt: g.alt });
-          }
-        }
-        showDbLog('saveGallery: sincronizado con Supabase', 'success');
-      } catch (e) {
-        showDbLog('saveGallery: Supabase falló → ' + e.message, 'error');
-      }
-    }
     lsSet('gallery', gallery);
     showDbLog('saveGallery: guardado en localStorage (' + gallery.length + ' imágenes)', 'success');
   }

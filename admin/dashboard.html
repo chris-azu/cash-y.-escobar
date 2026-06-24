@@ -882,13 +882,19 @@
       <!-- ======================== GALLERY ======================== -->
       <div class="admin-panel" id="panel-gallery">
         <div class="panel-header">
-          <h2>Galeria</h2>
-          <button class="btn btn-primary btn-sm" id="addGalleryBtn">+ Nueva Imagen</button>
+          <h2>Galeria de Productos</h2>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <div class="search-box" style="flex:1;min-width:200px">
+              <span class="search-icon"><i data-lucide="search" style="width:18px;height:18px"></i></span>
+              <input type="text" id="gallerySearch" placeholder="Buscar productos...">
+            </div>
+            <button class="btn btn-primary btn-sm" id="addGalleryBtn">+ Nueva Imagen</button>
+          </div>
         </div>
         <div class="product-grid" id="galleryGrid"></div>
         <div class="empty-state" id="emptyGallery" style="display:none">
           <i data-lucide="images" style="width:32px;height:32px"></i>
-          <p>No hay imagenes en la galeria. ¡Agrega la primera!</p>
+          <p>No hay productos en la galeria.</p>
         </div>
       </div>
 
@@ -1147,6 +1153,16 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="../js/storage.js"></script>
   <script src="../js/supabase.js"></script>
+  <script>
+    // Inicializar Supabase con credenciales del proyecto
+    (function() {
+      const SUPABASE_URL = 'https://wjzgxrqintzzfjhvhstm.supabase.co';
+      const SUPABASE_KEY = 'sb_publishable_I6tsOKsEXbogDU0uqPdl6w_11kVP5ZD';
+      localStorage.setItem('eh_supabase_url', SUPABASE_URL);
+      localStorage.setItem('eh_supabase_anon_key', SUPABASE_KEY);
+      console.log('[Admin] Supabase configurado con credenciales del proyecto');
+    })();
+  </script>
   <script src="../js/admin.js"></script>
   <script>if (typeof lucide !== 'undefined') lucide.createIcons();</script>
 </body>
