@@ -422,10 +422,10 @@ ul { list-style: none; }
 .hero-image {
   position: absolute;
   right: 0;
-  top: 50%;
+  top: calc(50% - 200px); /* este es: logo mas arriba */
   transform: translateY(-50%);
-  width: 45%;
-  max-width: 600px;
+  width: 25%;
+  max-width: 250px;
   pointer-events: none;
 }
 
@@ -434,7 +434,7 @@ ul { list-style: none; }
   aspect-ratio: 1;
   border-radius: var(--radius-xl);
   background: linear-gradient(135deg, var(--glass-bg), rgba(0, 102, 204, 0.1));
-  border: 1px solid var(--glass-border);
+  border: 1px solid rgba(255, 255, 255, 0.15); /* este es: borde reducido al borde del logo */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -444,11 +444,14 @@ ul { list-style: none; }
 }
 
 .hero-image .img-placeholder img {
-  width: 100%;
-  height: 100%;
+  width: 180px;
+  height: 180px;
+  max-width: 180px;
+  max-height: 180px;
   object-fit: contain;
   border-radius: 32px;
   padding: 12px;
+  opacity: 0.85;
 }
 
 /* ── Featured Products ── */

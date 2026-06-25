@@ -11,6 +11,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%230066cc'/%3E%3Cpath d='M35 50 L50 35 L65 50 L50 65 Z' fill='white'/%3E%3C/svg%3E">
   <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <title>Contacto — ElectroHogar</title>
   <script src="https://unpkg.com/lucide@latest"></script>
 </head>
@@ -48,7 +49,7 @@
                 <div class="icon"><i data-lucide="map-pin" style="width:20px;height:20px"></i></div>
                 <div>
                   <div class="label">Dirección</div>
-                  <div class="value" id="contactAddress">Av. Principal #123, Col. Centro</div>
+                  <div class="value" id="contactAddress">Jinotepe, Carazo, Nicaragua</div>
                 </div>
               </div>
               <div class="contact-item">
@@ -88,12 +89,8 @@
           </div>
         </div>
         <div class="reveal reveal-delay-2">
-          <div class="contact-map" id="mapContainer" style="height:100%;min-height:360px">
-            <div style="text-align:center;padding:40px">
-              <i data-lucide="map-pin" style="width:48px;height:48px;color:var(--accent);margin-bottom:12px"></i>
-              <p style="color:var(--text-secondary);font-size:1rem;font-weight:600" id="mapAddress">Av. Principal #123, Col. Centro</p>
-              <p style="font-size:0.85rem;color:var(--text-muted)">Estamos para atenderte</p>
-            </div>
+          <div class="contact-map" id="mapContainer" style="height:100%;min-height:360px;border-radius:12px;overflow:hidden">
+            <div id="leafletMap" style="width:100%;height:100%"></div>
           </div>
         </div>
       </div>
@@ -143,6 +140,7 @@
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="js/storage.js"></script>
   <script src="js/supabase.js"></script>
   <script>
@@ -156,5 +154,25 @@
     })();
   </script>
   <script src="js/app.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      var map = L.map('leafletMap').setView([11.84962, -86.19837], 16);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+      }).addTo(map);
+      
+      var marker = L.marker([11.84962, -86.19837]).addTo(map);
+      marker.bindPopup(
+        '<div style="text-align:center;padding:8px;font-family:inherit">' +
+        '<strong style="font-size:14px">ElectroHogar</strong><br>' +
+        '<small style="color:#666">Jinotepe, Carazo, Nicaragua</small><br>' +
+        '<a href="https://www.google.com/maps/dir/?api=1&destination=11.84962,-86.19837" ' +
+        'target="_blank" ' +
+        'style="display:inline-block;margin-top:8px;padding:8px 16px;background:#0066cc;color:white;text-decoration:none;border-radius:6px;font-size:13px;font-weight:600">' +
+        'Cómo llegar</a>' +
+        '</div>'
+      ).openPopup();
+    });
+  </script>
 </body>
 </html>

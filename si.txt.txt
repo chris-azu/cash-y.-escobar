@@ -1,0 +1,11 @@
+Antes de desplegar necesito una respuesta clara:
+
+1. ¿Dónde se almacenan actualmente los productos?
+2. ¿Dónde se almacenan las categorías?
+3. ¿Dónde se almacenan los banners?
+4. ¿Se utiliza LocalStorage?
+5. ¿Se utiliza Supabase?
+6. ¿Se utiliza alguna API?
+7. Si subo esta web a Namecheap hoy, ¿los cambios realizados desde el panel administrativo seguirán funcionando y serán visibles para todos los usuarios?
+
+Explícame exactamente el flujo de persistencia de datos actual.

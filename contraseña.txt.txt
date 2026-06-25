@@ -1,1 +1,0 @@
-postgresql://postgres: Escobary.cash$@db.wjzgxrqintzzfjhvhstm.supabase.co:5432/postgres

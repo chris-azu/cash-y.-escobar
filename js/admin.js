@@ -474,6 +474,18 @@
   });
 
   // ── Banners ──
+  const UBICACIONES = [
+    { value: 'hero', label: 'Hero Principal' },
+    { value: 'secundario1', label: 'Banner Secundario 1' },
+    { value: 'secundario2', label: 'Banner Secundario 2' },
+    { value: 'secundario3', label: 'Banner Secundario 3' }
+  ];
+
+  function getUbicacionLabel(value) {
+    const ub = UBICACIONES.find(u => u.value === value);
+    return ub ? ub.label : value || 'Sin ubicación';
+  }
+
   async function loadBanners() {
     cfg = await EH_DATA.getConfig();
     const banners = cfg.banners || [];
@@ -488,7 +500,7 @@
     empty.style.display = 'none';
     grid.innerHTML = banners.map((b, i) => `
       <div class="banner-control-item">
-        <div class="bc-label">Banner ${i + 1}</div>
+        <div class="bc-label">${getUbicacionLabel(b.ubicacion)}</div>
         <div class="preview-box" id="bannerPreview${i}">
           ${b.url
             ? `<img src="${b.url}" alt="${b.alt || 'Banner'}">`
@@ -512,8 +524,14 @@
   async function editBanner(idx) {
     cfg = await EH_DATA.getConfig();
     const banners = cfg.banners || [];
-    const current = banners[idx] || { url: '', alt: '' };
-    showModal(`Banner ${idx + 1}`, `
+    const current = banners[idx] || { url: '', alt: '', ubicacion: 'secundario1' };
+    showModal(`Editar Banner`, `
+      <div class="form-group">
+        <label>Ubicación *</label>
+        <select class="form-control" id="banUbicacion" required>
+          ${UBICACIONES.map(u => `<option value="${u.value}" ${u.value === current.ubicacion ? 'selected' : ''}>${u.label}</option>`).join('')}
+        </select>
+      </div>
       <div class="form-group">
         <label>Imagen del Banner</label>
         <input type="file" id="banFile" accept="image/*" style="margin-bottom:8px">
@@ -529,8 +547,9 @@
         url = await readFileAsDataURL(fileInput.files[0]);
       }
       const alt = document.getElementById('banAlt').value.trim();
+      const ubicacion = document.getElementById('banUbicacion').value;
       if (!cfg.banners) cfg.banners = [];
-      cfg.banners[idx] = { ...(cfg.banners[idx] || { id: idx + 1 }), url, alt };
+      cfg.banners[idx] = { ...(cfg.banners[idx] || { id: idx + 1 }), url, alt, ubicacion };
       addLog('Guardando banner...', 'info');
       await EH_DATA.saveConfig(cfg);
       showToast('Banner actualizado.');
@@ -567,7 +586,20 @@
 
   document.getElementById('addBannerBtn').addEventListener('click', async () => {
     cfg = await EH_DATA.getConfig();
+    const banners = cfg.banners || [];
+    const ubicacionesOcupadas = banners.filter(b => b.url).map(b => b.ubicacion);
+    const ubicacionesDisponibles = UBICACIONES.filter(u => !ubicacionesOcupadas.includes(u.value));
+
     showModal('Nuevo Banner', `
+      <div class="form-group">
+        <label>Ubicación *</label>
+        <select class="form-control" id="banUbicacion" required>
+          ${ubicacionesDisponibles.length > 0
+            ? ubicacionesDisponibles.map(u => `<option value="${u.value}">${u.label}</option>`).join('')
+            : UBICACIONES.map(u => `<option value="${u.value}">${u.label}</option>`).join('')}
+        </select>
+        ${ubicacionesDisponibles.length === 0 ? '<small style="color:var(--text-muted)">Todas las ubicaciones están ocupadas. Se reemplazará el banner existente.</small>' : ''}
+      </div>
       <div class="form-group">
         <label>Imagen del Banner</label>
         <input type="file" id="banFile" accept="image/*">
@@ -583,8 +615,23 @@
         url = await readFileAsDataURL(fileInput.files[0]);
       }
       const alt = document.getElementById('banAlt').value.trim();
+      const ubicacion = document.getElementById('banUbicacion').value;
       if (!cfg.banners) cfg.banners = [];
-      cfg.banners.push({ id: cfg.banners.length + 1, url, alt });
+
+      const existenteIdx = cfg.banners.findIndex(b => b.ubicacion === ubicacion);
+      if (existenteIdx !== -1 && cfg.banners[existenteIdx].url) {
+        if (!confirm(`Ya existe un banner en "${getUbicacionLabel(ubicacion)}". ¿Deseas reemplazarlo?`)) {
+          return;
+        }
+        cfg.banners[existenteIdx] = { ...cfg.banners[existenteIdx], url, alt };
+      } else {
+        if (existenteIdx !== -1) {
+          cfg.banners[existenteIdx] = { ...cfg.banners[existenteIdx], url, alt };
+        } else {
+          cfg.banners.push({ id: cfg.banners.length + 1, url, alt, ubicacion });
+        }
+      }
+
       addLog('Creando nuevo banner...', 'info');
       await EH_DATA.saveConfig(cfg);
       showToast('Banner creado.');
@@ -606,61 +653,41 @@
     }
   });
 
-  // ── Gallery (ahora muestra todos los productos) ──
+  // ── Gallery (imágenes de galería) ──
   async function loadGallery() {
-    const products = await EH_DATA.getProductsAll();
-    const searchTerm = document.getElementById('gallerySearch')?.value?.toLowerCase() || '';
+    const images = await EH_DATA.getGallery();
     const grid = document.getElementById('galleryGrid');
     const empty = document.getElementById('emptyGallery');
 
-    // Filtrar productos por búsqueda
-    const filteredProducts = products.filter(p => {
-      if (searchTerm) {
-        return p.name.toLowerCase().includes(searchTerm) ||
-               p.category.toLowerCase().includes(searchTerm);
-      }
-      return true;
-    });
-
-    if (filteredProducts.length === 0) {
+    if (images.length === 0) {
       grid.innerHTML = '';
       empty.style.display = 'block';
       initLucide();
       return;
     }
     empty.style.display = 'none';
-    grid.innerHTML = filteredProducts.map((p, i) => `
+    grid.innerHTML = images.map((img, i) => `
       <div class="admin-product-card">
         <div class="apc-image">
-          ${p.image
-            ? `<img src="${p.image}" alt="${p.name}" loading="lazy">`
+          ${img.url
+            ? `<img src="${img.url}" alt="${img.alt || ''}" loading="lazy">`
             : `<div class="no-img"><i data-lucide="image" style="width:28px;height:28px;color:var(--text-muted)"></i></div>`}
         </div>
         <div class="apc-body">
-          <div class="apc-name">${p.name}</div>
-          <div class="apc-cat">${p.category}</div>
+          <div class="apc-name">${img.alt || 'Sin descripción'}</div>
           <div class="apc-actions">
-            <button class="btn-edit" data-id="${p.id}"><i data-lucide="edit-2" style="width:12px;height:12px"></i> Editar</button>
-            <button class="btn-toggle ${p.is_active ? '' : 'inactive'}" data-id="${p.id}">${p.is_active ? 'Activo' : 'Inactivo'}</button>
-            <button class="btn-delete" data-id="${p.id}"><i data-lucide="trash-2" style="width:12px;height:12px"></i> Eliminar</button>
+            <button class="btn-delete-gallery" data-idx="${i}" style="background:rgba(214,40,40,0.15);color:var(--red)">
+              <i data-lucide="trash-2" style="width:12px;height:12px"></i> Eliminar
+            </button>
           </div>
         </div>
       </div>
     `).join('');
     initLucide();
-    grid.querySelectorAll('.btn-edit').forEach(btn => {
-      btn.addEventListener('click', () => editProduct(btn.dataset.id));
-    });
-    grid.querySelectorAll('.btn-toggle').forEach(btn => {
-      btn.addEventListener('click', () => toggleProduct(btn.dataset.id));
-    });
-    grid.querySelectorAll('.btn-delete').forEach(btn => {
-      btn.addEventListener('click', () => deleteProduct(btn.dataset.id));
+    grid.querySelectorAll('.btn-delete-gallery').forEach(btn => {
+      btn.addEventListener('click', () => deleteGalleryItem(parseInt(btn.dataset.idx)));
     });
   }
-
-  // Evento de búsqueda en galería
-  document.getElementById('gallerySearch')?.addEventListener('input', loadGallery);
 
   async function deleteGalleryItem(idx) {
     if (!confirm('¿Eliminar esta imagen de la galeria?')) return;
@@ -761,7 +788,6 @@
     const map = {
       cfgName: cfg.businessName,
       cfgSlogan: cfg.slogan,
-      cfgLogo: cfg.logo,
       cfgWhatsapp: cfg.whatsapp,
       cfgHeroTag: cfg.heroTag,
       cfgHeroTitle: cfg.heroTitle,
@@ -773,7 +799,6 @@
       cfgFacebook: cfg.social?.facebook || '',
       cfgInstagram: cfg.social?.instagram || '',
       cfgTwitter: cfg.social?.twitter || '',
-      cfgHeroImage: cfg.heroImage,
       cfgWhatsappMsg: cfg.whatsappMessage || 'Hola, me interesa este producto: {NOMBRE_PRODUCTO}. ¿Me podrían indicar el precio y disponibilidad?',
       cfgSecTagDest: cfg.sectionTags?.destacados || '',
       cfgSecTitleDest: cfg.sectionTitles?.destacados || '',
@@ -797,6 +822,13 @@
       const el = document.getElementById(id);
       if (el) el.value = val || '';
     });
+
+    // Logo preview
+    const logoPreview = document.getElementById('cfgLogoPreview');
+    if (logoPreview && cfg.logo) {
+      logoPreview.querySelector('img').src = cfg.logo;
+      logoPreview.style.display = 'block';
+    }
   }
 
   document.getElementById('saveConfigBtn').addEventListener('click', async () => {
@@ -805,11 +837,19 @@
     btn.disabled = true;
     btn.textContent = 'Guardando...';
     cfg = await EH_DATA.getConfig();
+
+    // Handle logo file upload
+    const logoFileInput = document.getElementById('cfgLogoFile');
+    let logo = cfg.logo || '';
+    if (logoFileInput.files && logoFileInput.files[0]) {
+      logo = await readFileAsDataURL(logoFileInput.files[0]);
+    }
+
     const updated = {
       ...cfg,
       businessName: document.getElementById('cfgName').value.trim(),
       slogan: document.getElementById('cfgSlogan').value.trim(),
-      logo: document.getElementById('cfgLogo').value.trim(),
+      logo: logo,
       whatsapp: document.getElementById('cfgWhatsapp').value.trim(),
       heroTag: document.getElementById('cfgHeroTag').value.trim(),
       heroTitle: document.getElementById('cfgHeroTitle').value.trim(),
@@ -823,7 +863,6 @@
         instagram: document.getElementById('cfgInstagram').value.trim(),
         twitter: document.getElementById('cfgTwitter').value.trim()
       },
-      heroImage: document.getElementById('cfgHeroImage').value.trim(),
       whatsappMessage: document.getElementById('cfgWhatsappMsg').value.trim(),
       sectionTags: {
         destacados: document.getElementById('cfgSecTagDest').value.trim(),
@@ -983,6 +1022,22 @@
     dbLogToggle.addEventListener('click', () => {
       dbLogConsole.classList.remove('open');
       if (dbLogToggleBtn) dbLogToggleBtn.style.opacity = '1';
+    });
+  }
+
+  // ── Logo file upload preview ──
+  const cfgLogoFile = document.getElementById('cfgLogoFile');
+  const cfgLogoPreview = document.getElementById('cfgLogoPreview');
+  if (cfgLogoFile && cfgLogoPreview) {
+    cfgLogoFile.addEventListener('change', () => {
+      if (cfgLogoFile.files && cfgLogoFile.files[0]) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          cfgLogoPreview.querySelector('img').src = e.target.result;
+          cfgLogoPreview.style.display = 'block';
+        };
+        reader.readAsDataURL(cfgLogoFile.files[0]);
+      }
     });
   }
 

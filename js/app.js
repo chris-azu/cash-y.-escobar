@@ -150,28 +150,28 @@
 
     // Logo
     if (cfg.logo) {
-      const logoPl = document.querySelector('.logo-placeholder');
-      if (logoPl) {
+      const logoPlaceholders = document.querySelectorAll('.logo-placeholder');
+      logoPlaceholders.forEach(logoPl => {
         logoPl.innerHTML = `<img src="${cfg.logo}" alt="Logo" style="width:100%;height:100%;object-fit:contain;border-radius:8px;padding:4px">`;
         logoPl.style.background = 'none';
-      }
+      });
     }
 
-    // Hero image
+    // Hero image from banner with ubicacion 'hero'
     const heroImgContainer = document.querySelector('.hero-image .img-placeholder');
     if (heroImgContainer) {
-      if (cfg.heroImage) {
-        heroImgContainer.innerHTML = `<img src="${cfg.heroImage}" alt="Hero" style="width:100%;height:100%;object-fit:contain;border-radius:32px;padding:12px">`;
+      const heroBanner = (cfg.banners || []).find(b => b.ubicacion === 'hero' && b.url);
+      if (heroBanner) {
+        heroImgContainer.innerHTML = `<img src="${heroBanner.url}" alt="${heroBanner.alt || 'Hero'}" style="width:100%;height:100%;object-fit:contain;border-radius:32px;padding:12px">`;
       }
     }
 
-    // Banners
+    // Banners secundarios (ubicacion starts with 'secundario')
     const bannerContainer = document.getElementById('bannersContainer');
     if (bannerContainer && isHome) {
-      const banners = cfg.banners || [];
-      const hasBanners = banners.some(b => b.url);
-      if (hasBanners) {
-        bannerContainer.innerHTML = banners.filter(b => b.url).map(b => `
+      const banners = (cfg.banners || []).filter(b => b.ubicacion && b.ubicacion.startsWith('secundario') && b.url);
+      if (banners.length > 0) {
+        bannerContainer.innerHTML = banners.map(b => `
           <div class="banner-item reveal">
             <img src="${b.url}" alt="${b.alt || 'Banner'}">
           </div>

@@ -47,15 +47,16 @@ const EH_DATA = (function () {
       businessName: 'ElectroHogar',
       slogan: 'Calidad y tecnología para tu hogar',
       logo: '',
-      heroImage: '',
       heroTag: 'ElectroHogar',
       heroTitle: 'Calidad y <span class="highlight">tecnología</span> para tu hogar',
       heroSubtitle: 'Equipa tu hogar con los mejores electrodomésticos de las marcas más reconocidas. Te asesoramos para encontrar el producto ideal.',
       banners: [
-        { id: 1, url: '', alt: 'Oferta especial' },
-        { id: 2, url: '', alt: 'Promoción' },
+        { id: 1, url: '', alt: 'Hero Principal', ubicacion: 'hero' },
+        { id: 2, url: '', alt: 'Banner Secundario 1', ubicacion: 'secundario1' },
+        { id: 3, url: '', alt: 'Banner Secundario 2', ubicacion: 'secundario2' },
+        { id: 4, url: '', alt: 'Banner Secundario 3', ubicacion: 'secundario3' },
       ],
-      address: 'Av. Principal #123, Col. Centro',
+      address: 'Jinotepe, Carazo, Nicaragua',
       whatsapp: '50575381352',
       phone: '+505 7538-1352',
       email: 'contacto@electrohogar.com',
@@ -114,9 +115,8 @@ const EH_DATA = (function () {
   }
 
   // ── Use Supabase if available, fallback to localStorage ──
-  // TEMPORALMENTE DESACTIVADO: Usar solo LocalStorage para asegurar funcionalidad
   function useSupabase() {
-    return false; // Forzar uso de LocalStorage
+    return true; // Usar Supabase para persistencia remota
   }
 
   // ── Categories ──
@@ -455,7 +455,6 @@ const EH_DATA = (function () {
       businessName: data.business_name || 'ElectroHogar',
       slogan: data.slogan || '',
       logo: data.logo_url || '',
-      heroImage: data.hero_image || '',
       heroTag: data.hero_tag || 'ElectroHogar',
       heroTitle: data.hero_title || 'Calidad y <span class="highlight">tecnología</span> para tu hogar',
       heroSubtitle: data.hero_subtitle || '',
@@ -489,7 +488,6 @@ const EH_DATA = (function () {
       business_name: c.businessName,
       slogan: c.slogan,
       logo_url: c.logo,
-      hero_image: c.heroImage,
       hero_tag: c.heroTag,
       hero_title: c.heroTitle,
       hero_subtitle: c.heroSubtitle,
